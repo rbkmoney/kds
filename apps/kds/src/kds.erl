@@ -14,21 +14,6 @@
 -export([stop /1]).
 
 %%
--export_type([hash/0]).
--export_type([token/0]).
--export_type([session/0]).
--export_type([plaintext/0]).
--export_type([ciphertext/0]).
-
--type hash() :: binary().
--type token() :: <<_:128>>.
--type session() :: binary().
--type metadata() :: #{binary() := binary()}.
--type ciphermeta() :: binary().
--type plaintext() :: binary() | {binary(), metadata()}.
--type ciphertext() :: binary() | {binary(), ciphermeta()}. % <<KeyID/byte, EncryptedData/binary>>
-
-%%
 %% API
 %%
 -spec start() ->
