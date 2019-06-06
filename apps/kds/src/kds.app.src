@@ -18,6 +18,7 @@
         erl_health,
         msgpack,
         lib_combin,
+        libdecaf,
         jose,
         cds_proto
     ]},
