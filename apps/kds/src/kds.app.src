@@ -1,0 +1,31 @@
+{application, kds, [
+    {description, "A service that does cds keyring management"},
+    {vsn, "1"},
+    {registered, []},
+    {mod, { kds , []}},
+    {applications, [
+        kernel,
+        stdlib,
+        crypto,
+        pooler,
+        scrypt,
+        riakc,
+        woody,
+        shamir,
+        logger_logstash_formatter,
+        scoper,
+        identdocstore_proto,
+        erl_health,
+        msgpack,
+        lib_combin,
+        jose,
+        cds_proto
+    ]},
+    {env, []},
+    {modules, []},
+    {maintainers, [
+        "Rustem Shaydullin <ndiezel0@gmail.com>"
+    ]},
+    {licenses, []},
+    {links, []}
+]}.
