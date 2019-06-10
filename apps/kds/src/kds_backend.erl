@@ -21,19 +21,17 @@ call(Key, Method, Args) ->
             throw(Error)
     catch Class:Reason:Stacktrace ->
         _ = logger:error(
-            "~p (~p) ~p failed~nClass~s~nReason~s~nStacktrace:~s",
-            [Key, Module, Method, Class, Reason,
-                genlib_format:format_stacktrace(Stacktrace)]),
+            "~p (~p) ~p failed~nClass~s~nReason~s",
+            [Key, Module, Method, Class, Reason],
+            #{stacktrace => genlib_format:format_stacktrace(Stacktrace)}),
         handle_error(Class, Reason)
     end.
 
 -spec handle_error(atom(), _) ->
     no_return().
-handle_error(throw, {pool_error, no_members} = Reason) ->
-    BinaryDescription = erlang:list_to_binary(io_lib:format("~9999p", [Reason])),
-    woody_error:raise(system, {internal, resource_unavailable, BinaryDescription});
-handle_error(error, timeout = Reason) ->
-    BinaryDescription = erlang:list_to_binary(io_lib:format("~9999p", [Reason])),
-    woody_error:raise(system, {internal, result_unknown, BinaryDescription});
+handle_error(throw, {pool_error, no_members}) ->
+    woody_error:raise(system, {internal, resource_unavailable, {pool_error, no_members}});
+handle_error(error, timeout) ->
+    woody_error:raise(system, {internal, result_unknown, timeout});
 handle_error(Class, Reason) ->
     exit({backend_error, {Class, Reason}}).
