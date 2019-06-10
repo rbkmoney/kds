@@ -165,7 +165,7 @@ init(C) ->
         },
         kds_keyring_client:get_state(root_url(C))
     ),
-    kds_ct_utils:store(master_keys, DecryptedMasterKeyShares, C).
+    kds_ct_utils:store(master_keys, lists:reverse(DecryptedMasterKeyShares), C).
 
 -spec init_with_timeout(config()) -> _.
 
@@ -249,17 +249,22 @@ unlock(C) ->
     [{Id1, MasterKey1}, {Id2, MasterKey2}, _MasterKey3] = kds_ct_utils:lookup(master_keys, C),
     _ = ?assertEqual(ok, kds_keyring_client:start_unlock(root_url(C))),
     _ = ?assertEqual({more_keys_needed, 1}, kds_keyring_client:confirm_unlock(Id1, MasterKey1, root_url(C))),
+    State = kds_keyring_client:get_state(root_url(C)),
     _ = ?assertMatch(
         #{
             status := locked,
             activities := #{
                 unlock := #{
-                    phase := validation,
-                    confirmation_shares := #{1 := Id1}
+                    phase := validation
                 }
             }
         },
-        kds_keyring_client:get_state(root_url(C))
+        State
+    ),
+    #{activities := #{unlock := #{confirmation_shares := ConfirmationShares}}} = State,
+    _ = ?assertMatch(
+        #{Id1 := _},
+        maps:fold(fun (K, V, Acc) -> Acc#{V => K} end, #{}, ConfirmationShares)
     ),
     _ = ?assertEqual(ok, kds_keyring_client:confirm_unlock(Id2, MasterKey2, root_url(C))).
 
@@ -306,18 +311,23 @@ rekey(C) ->
         kds_keyring_client:confirm_rekey(Id2, MasterKey2, root_url(C))
     ),
     EncryptedMasterKeyShares = kds_keyring_client:start_rekey_validation(root_url(C)),
+    State = kds_keyring_client:get_state(root_url(C)),
     _ = ?assertMatch(
         #{
             status := unlocked,
             activities := #{
                 rekeying := #{
                     phase := validation,
-                    confirmation_shares := #{1 := Id1, 2 := Id2},
                     validation_shares := #{}
                 }
             }
         },
-        kds_keyring_client:get_state(root_url(C))
+        State
+    ),
+    #{activities := #{rekeying := #{confirmation_shares := ConfirmationShares}}} = State,
+    _ = ?assertMatch(
+        #{Id1 := _, Id2 := _},
+        maps:fold(fun (K, V, Acc) -> Acc#{V => K} end, #{}, ConfirmationShares)
     ),
     Shareholders = kds_shareholder:get_all(),
     _ = ?assertEqual(length(EncryptedMasterKeyShares), length(Shareholders)),
