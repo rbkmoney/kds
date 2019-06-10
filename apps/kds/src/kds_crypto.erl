@@ -43,6 +43,8 @@
 }).
 -type cedf() :: #cedf{}.
 
+-define(CIPHER_TYPE, aes_gcm).
+
 %% interface
 
 -spec key() -> key().
@@ -54,7 +56,7 @@ encrypt(Key, Plain) ->
     IV = iv(),
     AAD = aad(),
     try
-        {Cipher, Tag} = crypto:block_encrypt(aes_gcm, Key, IV, {AAD, Plain}),
+        {Cipher, Tag} = crypto:block_encrypt(?CIPHER_TYPE, Key, IV, {AAD, Plain}),
         marshall_cedf(#cedf{iv = IV, aad = AAD, cipher = Cipher, tag = Tag})
     catch Class:Reason ->
         _ = logger:error("encryption failed with ~p ~p", [Class, Reason]),
@@ -80,7 +82,7 @@ public_encrypt(PublicKey, Plain) ->
 decrypt(Key, MarshalledCEDF) ->
     try
         #cedf{iv = IV, aad = AAD, cipher = Cipher, tag = Tag} = unmarshall_cedf(MarshalledCEDF),
-        crypto:block_decrypt(aes_gcm, Key, IV, {AAD, Cipher, Tag})
+        crypto:block_decrypt(?CIPHER_TYPE, Key, IV, {AAD, Cipher, Tag})
     of
         error ->
             throw(decryption_failed);
