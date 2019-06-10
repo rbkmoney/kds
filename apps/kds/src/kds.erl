@@ -55,8 +55,8 @@ init([]) ->
         start => {kds_keyring_sup, start_link, []}
     },
     Procs = [
-        Service,
-        KeyringSupervisor
+        KeyringSupervisor,
+        Service
     ],
     {ok, {{one_for_one, 1, 5}, Procs}}.
 
