@@ -27,14 +27,14 @@ all() ->
 
 groups() ->
     [
-        {env_storage_lifecycle, [sequence],[
+        {env_storage_lifecycle, [sequence], [
             create,
             already_exists,
             read,
             update,
             delete
         ]},
-        {file_storage_lifecycle, [sequence],[
+        {file_storage_lifecycle, [sequence], [
             create,
             already_exists,
             read,
