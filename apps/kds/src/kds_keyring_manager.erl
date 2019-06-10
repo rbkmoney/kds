@@ -5,10 +5,7 @@
 
 %% API.
 -export([start_link/0]).
--export([get_key/1]).
 -export([get_keyring/0]).
--export([get_current_key/0]).
--export([get_outdated_keys/0]).
 -export([start_unlock/0]).
 -export([confirm_unlock/2]).
 -export([cancel_unlock/0]).
@@ -44,12 +41,12 @@
 -type data() :: #data{}.
 -type state() :: locked | unlocked | not_initialized.
 -type status() :: #{
-    status => state(),
-    activities => #{
-        initialization => kds_keyring_initializer:status(),
-        rotation => kds_keyring_rotator:status(),
-        unlock => kds_keyring_unlocker:status(),
-        rekeying => kds_keyring_rekeyer:status()
+    status := state(),
+    activities := #{
+        initialization := kds_keyring_initializer:status(),
+        rotation := kds_keyring_rotator:status(),
+        unlock := kds_keyring_unlocker:status(),
+        rekeying := kds_keyring_rekeyer:status()
     }
 }.
 
@@ -62,23 +59,9 @@ callback_mode() -> handle_event_function.
 start_link() ->
     gen_statem:start_link({local, ?STATEM}, ?MODULE, [], []).
 
--spec get_key(kds_keyring:key_id()) -> {kds_keyring:key_id(), kds_keyring:key()}.
-get_key(KeyId) ->
-    call({get_key, KeyId}).
-
 -spec get_keyring() -> kds_keyring:keyring().
 get_keyring() ->
     call(get_keyring).
-
--spec get_current_key() -> {kds_keyring:key_id(), kds_keyring:key()}.
-get_current_key() ->
-    call(get_current_key).
-
--spec get_outdated_keys() -> [{From :: byte(), To :: byte()}].
-get_outdated_keys() ->
-    {KeyID, _} = get_current_key(),
-    #{min := MinID, max := MaxID} = kds_keyring:get_key_id_config(),
-    [I || {From, To} = I <- [{MinID, KeyID - 1}, {KeyID + 1, MaxID}], From =< To].
 
 -spec start_unlock() -> ok.
 start_unlock() ->
@@ -220,10 +203,6 @@ handle_event({call, From}, lock, unlocked, StateData) ->
     {next_state, locked, StateData#data{keyring = undefined}, {reply, From, ok}};
 handle_event({call, From}, get_keyring, unlocked, #data{keyring = Keyring}) ->
     {keep_state_and_data, {reply, From, {ok, Keyring}}};
-handle_event({call, From}, {get_key, KeyId}, unlocked, #data{keyring = Keyring}) ->
-    {keep_state_and_data, {reply, From, kds_keyring:get_key(KeyId, Keyring)}};
-handle_event({call, From}, get_current_key, unlocked, #data{keyring = Keyring}) ->
-    {keep_state_and_data, {reply, From, {ok, kds_keyring:get_current_key(Keyring)}}};
 handle_event({call, From}, start_rotate, unlocked, #data{keyring = OldKeyring}) ->
     EncryptedKeyring = kds_keyring_storage:read(),
     Result = kds_keyring_rotator:initialize(OldKeyring, EncryptedKeyring),

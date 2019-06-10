@@ -36,9 +36,9 @@
 -type data() :: #data{}.
 -type seconds() :: non_neg_integer().
 -type status() :: #{
-    phase => state(),
-    lifetime => seconds() | undefined,
-    validation_shares => #{kds_keysharing:share_id() => shareholder_id()}
+    phase := state(),
+    lifetime := seconds() | undefined,
+    validation_shares := #{kds_keysharing:share_id() => shareholder_id()}
 }.
 
 -type encrypted_keyring() :: kds_keyring:encrypted_keyring().
@@ -107,7 +107,7 @@ handle_event({call, From}, {initialize, Threshold}, uninitialized, Data) ->
             MasterKey = kds_crypto:key(),
             Keyring = kds_keyring:new(),
             EncryptedKeyring = kds_keyring:encrypt(MasterKey, Keyring),
-            Shares = kds_keysharing:share(MasterKey, Threshold, length(Shareholders)),
+            Shares = kds_keysharing:share(MasterKey, Threshold, ShareholdersLength),
             EncryptedShares = kds_keysharing:encrypt_shares_for_shareholders(Shares, Shareholders),
             TimerRef = erlang:start_timer(get_timeout(), self(), lifetime_expired),
             NewData = Data#data{

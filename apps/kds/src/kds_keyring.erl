@@ -11,8 +11,6 @@
 -export([marshall/1]).
 -export([unmarshall/1]).
 
--export([get_key_id_config/0]).
-
 -export([validate_masterkey/3]).
 -export([validate_masterkey/2]).
 
@@ -28,8 +26,8 @@
 -type encrypted_keyring() :: binary().
 
 -type keyring() :: #{
-    current_key => key_id(),
-    keys => #{key_id() => key()}
+    current_key := key_id(),
+    keys := #{key_id() => key()}
 }.
 
 -type key_id_config() :: #{
@@ -44,7 +42,6 @@
 -spec new() -> keyring().
 new() ->
     #{current_key => 0, keys => #{0 => kds_crypto:key()}}.
-
 
 -spec rotate(keyring()) -> keyring().
 rotate(#{current_key := CurrentKeyId, keys := Keys}) ->
@@ -105,16 +102,8 @@ unmarshall_keys(<<>>, Acc) ->
 unmarshall_keys(<<KeyId, Key:?KEY_BYTESIZE/binary, Rest/binary>>, Acc) ->
     unmarshall_keys(Rest, Acc#{KeyId => Key}).
 
--spec get_key_id_config() -> key_id_config().
-get_key_id_config() ->
-    #{
-        min => 0,
-        max => 255
-    }.
-
 -spec validate_masterkey(masterkey(), keyring(), encrypted_keyring()) ->
     {ok, keyring()} | {error, wrong_masterkey}.
-
 validate_masterkey(MasterKey, Keyring, EncryptedOldKeyring) ->
     case decrypt(MasterKey, EncryptedOldKeyring) of
         {ok, Keyring} ->
@@ -127,7 +116,6 @@ validate_masterkey(MasterKey, Keyring, EncryptedOldKeyring) ->
 
 -spec validate_masterkey(masterkey(), encrypted_keyring()) ->
     {ok, keyring()} | {error, wrong_masterkey}.
-
 validate_masterkey(MasterKey, EncryptedOldKeyring) ->
     case decrypt(MasterKey, EncryptedOldKeyring) of
         {ok, Keyring} ->

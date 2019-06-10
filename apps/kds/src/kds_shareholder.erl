@@ -16,7 +16,7 @@
     id := shareholder_id(),
     owner := binary(),
     public_keys := #{
-        public_key_type() := public_key()
+        public_key_type() => public_key()
     }
 }.
 -type shareholders() :: list(shareholder()).
@@ -24,9 +24,10 @@
 -spec get_all() -> shareholders().
 get_all() ->
     Shareholders = genlib_app:env(kds, shareholders, #{}),
-    MergedShareholders = lists:map(
-        fun convert_to_map/1,
-        lists:zip(maps:keys(Shareholders), maps:values(Shareholders))),
+    MergedShareholders = maps:fold(
+        fun (ShareholderId, Shareholder, Acc) ->
+            [convert_to_map({ShareholderId, Shareholder}) | Acc]
+        end, [], Shareholders),
     case validate_shareholders(MergedShareholders) of
         true ->
             MergedShareholders;

@@ -52,7 +52,8 @@ init([]) ->
     ),
     KeyringSupervisor = #{
         id => kds_keyring_sup,
-        start => {kds_keyring_sup, start_link, []}
+        start => {kds_keyring_sup, start_link, []},
+        type => supervisor
     },
     Procs = [
         KeyringSupervisor,

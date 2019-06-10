@@ -44,8 +44,6 @@
 }.
 -type encrypted_master_key_shares() :: list(encrypted_master_key_share()).
 
-
-
 -spec share(binary(), byte(), byte()) -> [masterkey_share()].
 share(Secret, Threshold, Count) ->
     try
@@ -54,7 +52,6 @@ share(Secret, Threshold, Count) ->
         _ = logger:error("keysharing failed with ~p ~p", [Class, Reason]),
         throw(keysharing_failed)
     end.
-
 
 -spec recover([masterkey_share()] | #{integer() => masterkey_share()}) ->
     {ok, masterkey()} | {error, failed_to_recover}.

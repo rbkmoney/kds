@@ -16,16 +16,17 @@
 -export_type([jwk_encoded/0]).
 -export_type([jwe_compacted/0]).
 
-%%internal
+-type jwk_encoded() :: binary().
+-type jwe_compacted() :: binary().
+
+%% internal types
 
 -type key() :: <<_:256>>.
 -type iv()  :: binary().
 -type tag() :: binary().
 -type aad() :: binary().
 -type jose_jwk() :: #jose_jwk{}.
--type jwk_encoded() :: binary().
 -type jwk_map() :: map().
--type jwe_compacted() :: binary().
 -type jws_compacted() :: binary().
 
 -type jwk_generation_params() :: term().
@@ -35,17 +36,12 @@
 
 %% cedf is for CDS Encrypted Data Format
 -record(cedf, {
-    tag,
-    iv,
-    aad,
-    cipher
-}).
--type cedf() :: #cedf{
     tag :: tag(),
     iv :: iv(),
     aad :: aad(),
-    cipher :: binary()
-}.
+    cipher  :: binary()
+}).
+-type cedf() :: #cedf{}.
 
 %% interface
 
@@ -68,12 +64,12 @@ encrypt(Key, Plain) ->
 -spec public_encrypt(jwk_map(), binary()) -> jwe_compacted().
 public_encrypt(PublicKey, Plain) ->
     JWKPublicKey = jose_jwk:from(PublicKey),
+    EncryptorWithoutKid = jose_jwk:block_encryptor(JWKPublicKey),
     Encryptor = case JWKPublicKey#jose_jwk.fields of
         #{<<"kid">> := Kid} ->
-            EncryptorWithoutKid = jose_jwk:block_encryptor(JWKPublicKey),
             EncryptorWithoutKid#{<<"kid">> => Kid};
         _ ->
-            jose_jwk:block_encryptor(JWKPublicKey)
+            EncryptorWithoutKid
     end,
     {_EncryptionAlgo, JWEPlain} =
         jose_jwe:block_encrypt(JWKPublicKey, Plain, jose_jwe:from(Encryptor)),

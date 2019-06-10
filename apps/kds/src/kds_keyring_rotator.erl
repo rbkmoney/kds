@@ -28,9 +28,9 @@
 -type data() :: #data{}.
 -type seconds() :: non_neg_integer().
 -type status() :: #{
-    phase => state(),
-    lifetime => seconds() | undefined,
-    confirmation_shares => #{kds_keysharing:share_id() => shareholder_id()}
+    phase := state(),
+    lifetime := seconds() | undefined,
+    confirmation_shares := #{kds_keysharing:share_id() => shareholder_id()}
 }.
 
 -type state() :: uninitialized | validation.
