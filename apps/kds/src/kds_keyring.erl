@@ -17,14 +17,33 @@
 -export_type([key/0]).
 -export_type([key_id/0]).
 -export_type([keyring/0]).
+-export_type([keyring_data/0]).
+-export_type([keyring_meta/0]).
 -export_type([encrypted_keyring/0]).
 
 -type masterkey() :: kds_keysharing:masterkey().
 -type key() :: binary().
 -type key_id() :: byte().
--type encrypted_keyring() :: binary().
+-type encrypted_keyring() :: #{
+    data := binary(),
+    meta := keyring_meta()
+}.
+
+-type key_meta() :: #{
+    retired := boolean()
+}.
+-type keyring_meta() :: #{
+    keys := #{
+        key_id() => key_meta()
+    }
+}.
 
 -type keyring() :: #{
+    data := keyring_data(),
+    meta := keyring_meta()
+}.
+
+-type keyring_data() :: #{
     current_key := key_id(),
     keys := #{key_id() => key()}
 }.
@@ -35,20 +54,40 @@
 
 -spec new() -> keyring().
 new() ->
-    #{current_key => 0, keys => #{0 => kds_crypto:key()}}.
+    #{
+        data => #{
+            current_key => 0,
+            keys => #{0 => kds_crypto:key()}
+        },
+        meta => #{
+            keys => #{
+                0 => #{
+                    retired => false
+                }
+            }
+        }
+    }.
 
 -spec rotate(keyring()) -> keyring().
-rotate(#{current_key := CurrentKeyId, keys := Keys}) ->
+rotate(#{data := #{current_key := CurrentKeyId, keys := Keys}, meta := #{keys := KeysMeta}}) ->
     <<NewCurrentKeyId>> = <<(CurrentKeyId + 1)>>,
     case maps:is_key(NewCurrentKeyId, Keys) of
         false ->
-            #{current_key => NewCurrentKeyId, keys => Keys#{NewCurrentKeyId => kds_crypto:key()}};
+            #{
+                data => #{
+                    current_key => NewCurrentKeyId,
+                    keys => Keys#{NewCurrentKeyId => kds_crypto:key()}
+                },
+                meta => #{
+                    keys => KeysMeta#{NewCurrentKeyId => #{retired => false}}
+                }
+            };
         true ->
             throw(keyring_full)
     end.
 
 -spec get_key(key_id(), keyring()) -> {ok, {key_id(), key()}} | {error, not_found}.
-get_key(KeyId, #{keys := Keys}) ->
+get_key(KeyId, #{data := #{keys := Keys}}) ->
     case maps:find(KeyId, Keys) of
         {ok, Key} ->
             {ok, {KeyId, Key}};
@@ -57,32 +96,43 @@ get_key(KeyId, #{keys := Keys}) ->
     end.
 
 -spec get_keys(keyring()) -> [{key_id(), key()}].
-get_keys(#{keys := Keys}) ->
+get_keys(#{data := #{keys := Keys}}) ->
     maps:to_list(Keys).
 
 -spec get_current_key(keyring()) -> {key_id(), key()}.
-get_current_key(#{current_key := CurrentKeyId, keys := Keys}) ->
+get_current_key(#{data := #{current_key := CurrentKeyId, keys := Keys}}) ->
     CurrentKey = maps:get(CurrentKeyId, Keys),
     {CurrentKeyId, CurrentKey}.
 
 %%
 
 -spec encrypt(key(), keyring()) -> encrypted_keyring().
-encrypt(MasterKey, Keyring) ->
-    kds_crypto:encrypt(MasterKey, marshall(Keyring)).
+encrypt(MasterKey, #{data := KeyringData} = Keyring) ->
+    Keyring#{data => kds_crypto:encrypt(MasterKey, marshall(KeyringData))}.
 
 -spec decrypt(key(), encrypted_keyring()) -> {ok, keyring()} | {error, decryption_failed}.
-decrypt(MasterKey, EncryptedKeyring) ->
-    try {ok, unmarshall(kds_crypto:decrypt(MasterKey, EncryptedKeyring))} catch
+decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta} = EncryptedKeyring) ->
+    try unmarshall(kds_crypto:decrypt(MasterKey, EncryptedKeyringData)) of
+        KeyringData ->
+            case KeyringMeta of
+                undefined ->
+                    #{
+                        data => KeyringData,
+                        meta => kds_keyring_meta:get_keyring_meta_from_keyring_data(KeyringData)
+                    };
+                _ ->
+                    EncryptedKeyring#{data => KeyringData}
+            end
+    catch
         decryption_failed ->
             {error, decryption_failed}
     end.
 
--spec marshall(keyring()) -> binary().
+-spec marshall(keyring_data()) -> binary().
 marshall(#{current_key := CurrentKey, keys := Keys}) ->
     <<CurrentKey, (maps:fold(fun marshall_keys/3, <<>>, Keys))/binary>>.
 
--spec unmarshall(binary()) -> keyring().
+-spec unmarshall(binary()) -> keyring_data().
 unmarshall(<<CurrentKey, Keys/binary>>) ->
     #{current_key => CurrentKey, keys => unmarshall_keys(Keys, #{})}.
 

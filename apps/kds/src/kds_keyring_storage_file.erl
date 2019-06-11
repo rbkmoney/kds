@@ -30,7 +30,7 @@ child_spec(StorageOpts) ->
 start_link(KeyringPath) ->
     gen_server:start_link({local, ?SERVER}, ?MODULE, KeyringPath, []).
 
--spec create(binary()) -> ok | {error, already_exists}.
+-spec create(kds_keyring:encrypted_keyring()) -> ok | {error, already_exists}.
 create(Keyring) ->
     gen_server:call(?SERVER, {create, Keyring}).
 
@@ -55,7 +55,7 @@ handle_call({create, Keyring}, _From, #state{keyring_path = KeyringPath} = State
     Reply = case filelib:is_regular(KeyringPath) of
         false ->
             ok = filelib:ensure_dir(KeyringPath),
-            ok = atomic_write(KeyringPath, Keyring);
+            ok = atomic_write(KeyringPath, jsx:encode(Keyring));
         true ->
             {error, already_exists}
     end,
@@ -63,14 +63,20 @@ handle_call({create, Keyring}, _From, #state{keyring_path = KeyringPath} = State
 handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
     Reply = case file:read_file(KeyringPath) of
         {ok, Data} ->
-            {ok, Data};
+            case jsx:is_json(Data) of
+                true ->
+                    DecodedData = jsx:decode(Data, [return_maps]),
+                    {ok, #{data => maps:get(data, DecodedData), meta => maps:get(meta, DecodedData)}};
+                false ->
+                    {ok, #{data => Data, meta => undefined}}
+            end;
         {error, enoent} ->
             {error, not_found}
     end,
     {reply, Reply, State};
 handle_call({update, Keyring}, _From, #state{keyring_path = KeyringPath} = State) ->
     ok = filelib:ensure_dir(KeyringPath),
-    ok = atomic_write(KeyringPath, Keyring),
+    ok = atomic_write(KeyringPath, jsx:encode(Keyring)),
     {reply, ok, State};
 handle_call(delete, _From, #state{keyring_path = KeyringPath} = State) ->
     _ = case file:delete(KeyringPath) of
