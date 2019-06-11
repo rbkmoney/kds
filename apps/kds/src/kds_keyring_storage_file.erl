@@ -65,7 +65,7 @@ handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
         {ok, Data} ->
             case jsx:is_json(Data) of
                 true ->
-                    DecodedData = jsx:decode(Data, [return_maps]),
+                    DecodedData = jsx:decode(Data, [return_maps, {labels, existing_atom}]),
                     {ok, #{data => maps:get(data, DecodedData), meta => maps:get(meta, DecodedData)}};
                 false ->
                     {ok, #{data => Data, meta => undefined}}

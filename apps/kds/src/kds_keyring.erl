@@ -107,21 +107,24 @@ get_current_key(#{data := #{current_key := CurrentKeyId, keys := Keys}}) ->
 %%
 
 -spec encrypt(key(), keyring()) -> encrypted_keyring().
-encrypt(MasterKey, #{data := KeyringData} = Keyring) ->
-    Keyring#{data => kds_crypto:encrypt(MasterKey, marshall(KeyringData))}.
+encrypt(MasterKey, #{data := KeyringData, meta := KeyringMeta}) ->
+    #{
+        data => kds_crypto:encrypt(MasterKey, marshall(KeyringData)),
+        meta => KeyringMeta
+    }.
 
 -spec decrypt(key(), encrypted_keyring()) -> {ok, keyring()} | {error, decryption_failed}.
-decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta} = EncryptedKeyring) ->
+decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta}) ->
     try unmarshall(kds_crypto:decrypt(MasterKey, EncryptedKeyringData)) of
         KeyringData ->
             case KeyringMeta of
                 undefined ->
-                    #{
+                    {ok, #{
                         data => KeyringData,
                         meta => kds_keyring_meta:get_keyring_meta_from_keyring_data(KeyringData)
-                    };
+                    }};
                 _ ->
-                    EncryptedKeyring#{data => KeyringData}
+                    {ok, #{data => KeyringData, meta => KeyringMeta}}
             end
     catch
         decryption_failed ->

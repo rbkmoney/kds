@@ -55,24 +55,24 @@ end_per_group(_, _C) ->
 -spec create(config()) -> _.
 
 create(_C) ->
-    Keyring = <<"initial">>,
+    Keyring = #{data => <<"initial">>, meta => #{keys => #{}}},
     ok = kds_keyring_storage:create(Keyring).
 
 -spec already_exists(config()) -> _.
 
 already_exists(_C) ->
-    Keyring = <<"bla">>,
+    Keyring = #{data => <<"bla">>, meta => #{keys => #{}}},
     already_exists = (catch kds_keyring_storage:create(Keyring)).
 
 -spec read(config()) -> _.
 
 read(_C) ->
-    <<"initial">> = kds_keyring_storage:read().
+    #{data := <<"initial">>, meta := #{keys := #{}}} = kds_keyring_storage:read().
 
 -spec update(config()) -> _.
 
 update(_C) ->
-    NewKeyring = <<"updated keyring">>,
+    NewKeyring = #{data => <<"updated keyring">>, meta => #{keys => #{}}},
     kds_keyring_storage:update(NewKeyring),
     NewKeyring = kds_keyring_storage:read().
 

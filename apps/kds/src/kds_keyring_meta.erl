@@ -3,7 +3,7 @@
 %% API
 -export([get_keyring_meta_from_keyring_data/1]).
 
--spec get_keyring_meta_from_keyring_data(kds_keyring:kering_data()) ->
+-spec get_keyring_meta_from_keyring_data(kds_keyring:keyring_data()) ->
     kds_keyring:keyring_meta().
 get_keyring_meta_from_keyring_data(KeyringData) ->
     Keys = maps:get(keys, KeyringData),
