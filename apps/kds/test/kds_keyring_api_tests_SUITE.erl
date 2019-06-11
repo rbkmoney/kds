@@ -165,7 +165,7 @@ init(C) ->
         },
         kds_keyring_client:get_state(root_url(C))
     ),
-    kds_ct_utils:store(master_keys, lists:reverse(DecryptedMasterKeyShares), C).
+    kds_ct_utils:store(master_keys, DecryptedMasterKeyShares, C).
 
 -spec init_with_timeout(config()) -> _.
 
@@ -552,10 +552,9 @@ rekey_operation_aborted_failed_to_recover_confirm(C) ->
 -spec rekey_operation_aborted_failed_to_recover_validate(config()) -> _.
 
 rekey_operation_aborted_failed_to_recover_validate(C) ->
-    [{Id1, TrueSignedShare1}, {Id2, TrueSignedShare2} | _MasterKeys] = kds_ct_utils:lookup(master_keys, C),
+    [{Id1, TrueSignedShare1}, {Id2, TrueSignedShare2}, {Id3, _TrueSignedShare3}] = kds_ct_utils:lookup(master_keys, C),
     SigPrivateKeys = sig_private_keys(C),
-    [{Id1, SigPrivateKey1}, {Id2, SigPrivateKey2}, {Id3, SigPrivateKey3}] =
-        maps:to_list(SigPrivateKeys),
+    #{Id1 := SigPrivateKey1, Id2 := SigPrivateKey2, Id3 := SigPrivateKey3} = SigPrivateKeys,
     MasterKey = kds_crypto:key(),
     [WrongShare1, WrongShare2, _WrongShare3] = kds_keysharing:share(MasterKey, 2, 3),
     InvalidShare = kds_keysharing:convert(#share{threshold = 2, x = 4, y = <<23224>>}),
@@ -575,10 +574,9 @@ rekey_operation_aborted_failed_to_recover_validate(C) ->
 -spec rekey_operation_aborted_failed_to_decrypt_keyring(config()) -> _.
 
 rekey_operation_aborted_failed_to_decrypt_keyring(C) ->
-    [{Id1, TrueSignedShare1}, {Id2, TrueSignedShare2} | _MasterKeys] = kds_ct_utils:lookup(master_keys, C),
+    [{Id1, TrueSignedShare1}, {Id2, TrueSignedShare2}, {Id3, _TrueSignedShare3}] = kds_ct_utils:lookup(master_keys, C),
     SigPrivateKeys = sig_private_keys(C),
-    [{Id1, SigPrivateKey1}, {Id2, SigPrivateKey2}, {Id3, SigPrivateKey3}] =
-        maps:to_list(SigPrivateKeys),
+    #{Id1 := SigPrivateKey1, Id2 := SigPrivateKey2, Id3 := SigPrivateKey3} = SigPrivateKeys,
     MasterKey = kds_crypto:key(),
     [WrongShare1, WrongShare2, WrongShare3] = kds_keysharing:share(MasterKey, 2, 3),
 
@@ -597,10 +595,9 @@ rekey_operation_aborted_failed_to_decrypt_keyring(C) ->
 -spec rekey_operation_aborted_non_matching_masterkey(config()) -> _.
 
 rekey_operation_aborted_non_matching_masterkey(C) ->
-    [{Id1, TrueSignedShare1}, {Id2, TrueSignedShare2} | _MasterKeys] = kds_ct_utils:lookup(master_keys, C),
+    [{Id1, TrueSignedShare1}, {Id2, TrueSignedShare2}, {Id3, _TrueSignedShare3}] = kds_ct_utils:lookup(master_keys, C),
     SigPrivateKeys = sig_private_keys(C),
-    [{Id1, SigPrivateKey1}, {Id2, SigPrivateKey2}, {Id3, SigPrivateKey3}] =
-        maps:to_list(SigPrivateKeys),
+    #{Id1 := SigPrivateKey1, Id2 := SigPrivateKey2, Id3 := SigPrivateKey3} = SigPrivateKeys,
     MasterKey = kds_crypto:key(),
     [WrongShare1, WrongShare2, _WrongShare3] = kds_keysharing:share(MasterKey, 1, 3),
     MasterKey2 = kds_crypto:key(),

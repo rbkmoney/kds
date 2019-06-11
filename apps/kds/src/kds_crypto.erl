@@ -39,7 +39,7 @@
     tag :: tag(),
     iv :: iv(),
     aad :: aad(),
-    cipher  :: binary()
+    cipher :: binary()
 }).
 -type cedf() :: #cedf{}.
 
