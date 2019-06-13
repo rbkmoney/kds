@@ -19,7 +19,6 @@
 
 all() ->
     [
-        {group, env_storage_lifecycle},
         {group, file_storage_lifecycle}
     ].
 
@@ -27,13 +26,6 @@ all() ->
 
 groups() ->
     [
-        {env_storage_lifecycle, [sequence], [
-            create,
-            already_exists,
-            read,
-            update,
-            delete
-        ]},
         {file_storage_lifecycle, [sequence], [
             create,
             already_exists,
@@ -48,10 +40,6 @@ groups() ->
 %%
 
 -spec init_per_group(atom(), config()) -> config().
-
-init_per_group(env_storage_lifecycle, C) ->
-    application:set_env(kds, keyring_storage, kds_keyring_storage_env),
-    C;
 
 init_per_group(file_storage_lifecycle, C) ->
     application:set_env(kds, keyring_storage, kds_keyring_storage_file),
