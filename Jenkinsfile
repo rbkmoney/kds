@@ -37,7 +37,7 @@ build('kds', 'docker-host', finalHook) {
         }
       }
       runStage('test') {
-        sh "make wdeps_test"
+        sh "make wc_test"
       }
     }
 

@@ -33,7 +33,7 @@ $(SUBTARGETS): %/.git: %
 
 submodules: $(SUBTARGETS)
 
-compile: submodules rebar-update
+compile: submodules
 	$(REBAR) compile
 
 xref: submodules

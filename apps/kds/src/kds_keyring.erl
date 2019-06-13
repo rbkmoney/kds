@@ -18,7 +18,6 @@
 -export_type([key_id/0]).
 -export_type([keyring/0]).
 -export_type([encrypted_keyring/0]).
--export_type([key_id_config/0]).
 
 -type masterkey() :: kds_keysharing:masterkey().
 -type key() :: binary().
