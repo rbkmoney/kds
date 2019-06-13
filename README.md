@@ -14,5 +14,3 @@ A service that does cds keyring management
 Дальнейшую документацию можно почерпнуть, пройдясь по ссылкам в [соответствующем документе](doc/keyring.md). 
 
 [1]: http://erlang.org/doc/man/shell.html
-[2]: https://github.com/erlware/relx
-[3]: https://docs.docker.com/machine/install-machine/

@@ -4,7 +4,8 @@
 
 -export([share/3]).
 -export([recover/1]).
--export([convert/1]).
+-export([encode_share/1]).
+-export([decode_share/1]).
 -export([encrypt_shares_for_shareholders/2]).
 -export([get_shares/1]).
 -export([get_id_map/1]).
@@ -47,7 +48,7 @@
 -spec share(binary(), byte(), byte()) -> [masterkey_share()].
 share(Secret, Threshold, Count) ->
     try
-        [convert(Share) || Share <- shamir:share(Secret, Threshold, Count)]
+        [encode_share(Share) || Share <- shamir:share(Secret, Threshold, Count)]
     catch Class:Reason ->
         _ = logger:error("keysharing failed with ~p ~p", [Class, Reason]),
         throw(keysharing_failed)
@@ -60,18 +61,20 @@ recover(Shares) when is_map(Shares) ->
     recover(maps:values(Shares));
 recover(Shares) ->
     try
-        {ok, shamir:recover([convert(Share) || Share <- Shares])}
+        {ok, shamir:recover([decode_share(Share) || Share <- Shares])}
     catch Class:Reason ->
         _ = logger:error("keysharing recover failed ~p ~p", [Class, Reason]),
         {error, failed_to_recover}
     end.
 
--spec convert
-    (share()) -> masterkey_share();
+-spec encode_share
+    (share()) -> masterkey_share().
+encode_share(#share{threshold = Threshold, x = X, y = Y}) ->
+    base64:encode(<<Threshold, X, Y/binary>>).
+
+-spec decode_share
     (masterkey_share()) -> share().
-convert(#share{threshold = Threshold, x = X, y = Y}) ->
-    base64:encode(<<Threshold, X, Y/binary>>);
-convert(Share) when is_binary(Share) ->
+decode_share(Share) when is_binary(Share) ->
     <<Threshold, X, Y/binary>> = base64:decode(Share),
     #share{threshold = Threshold, x = X, y = Y}.
 

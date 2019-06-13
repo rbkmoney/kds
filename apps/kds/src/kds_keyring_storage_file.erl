@@ -6,7 +6,7 @@
 -export([update/1]).
 -export([delete/0]).
 
--define(DEFAULT_KEYRING_PATH, "/var/kds/keyring").
+-define(DEFAULT_KEYRING_PATH, "/var/lib/kds/keyring").
 
 -spec create(binary()) -> ok | {error, already_exists}.
 create(Keyring) ->

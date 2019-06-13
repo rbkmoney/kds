@@ -29,8 +29,6 @@ call(Key, Method, Args) ->
 
 -spec handle_error(atom(), _) ->
     no_return().
-handle_error(throw, {pool_error, no_members}) ->
-    woody_error:raise(system, {internal, resource_unavailable, <<"pool_error, no_members">>});
 handle_error(error, timeout) ->
     woody_error:raise(system, {internal, result_unknown, <<"timeout">>});
 handle_error(Class, Reason) ->

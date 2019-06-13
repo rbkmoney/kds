@@ -18,9 +18,7 @@ BASE_IMAGE_TAG := bdb3e60ddc70044bae1aa581d260d3a9803a2477
 
 BUILD_IMAGE_TAG := fcf116dd775cc2e91bffb6a36835754e3f2d5321
 
-CALL_W_CONTAINER := all submodules rebar-update compile xref lint dialyze test start devrel release clean distclean
-
-DOCKER_COMPOSE_PREEXEC_HOOK = $(DOCKER_COMPOSE) scale member=4
+CALL_W_CONTAINER := all submodules compile xref lint dialyze test devrel release clean distclean
 
 .PHONY: $(CALL_W_CONTAINER)
 
@@ -34,9 +32,6 @@ $(SUBTARGETS): %/.git: %
 	touch $@
 
 submodules: $(SUBTARGETS)
-
-rebar-update:
-	$(REBAR) update
 
 compile: submodules rebar-update
 	$(REBAR) compile

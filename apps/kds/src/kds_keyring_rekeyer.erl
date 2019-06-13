@@ -137,7 +137,7 @@ handle_event({call, From}, {initialize, Threshold, EncryptedKeyring}, uninitiali
     end;
 handle_event({call, From}, {confirm, ShareholderId, Share}, confirmation,
     #data{confirmation_shares = Shares, encrypted_keyring = EncryptedKeyring, timer = TimerRef} = Data) ->
-    #share{x = X, threshold = Threshold} = kds_keysharing:convert(Share),
+    #share{x = X, threshold = Threshold} = kds_keysharing:decode_share(Share),
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Threshold ->
             ListShares = kds_keysharing:get_shares(AllShares),
@@ -180,7 +180,7 @@ handle_event({call, From}, {validate, ShareholderId, Share}, validation,
         validation_shares = Shares,
         encrypted_keyring = EncryptedKeyring,
         timer = TimerRef} = Data) ->
-    #share{x = X} = kds_keysharing:convert(Share),
+    #share{x = X} = kds_keysharing:decode_share(Share),
     ShareholdersCount = length(Shareholders),
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= ShareholdersCount ->

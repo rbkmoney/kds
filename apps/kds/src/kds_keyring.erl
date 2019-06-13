@@ -30,11 +30,6 @@
     keys := #{key_id() => key()}
 }.
 
--type key_id_config() :: #{
-    min := non_neg_integer(),
-    max := non_neg_integer()
-}.
-
 -define(KEY_BYTESIZE, 32).
 
 %%

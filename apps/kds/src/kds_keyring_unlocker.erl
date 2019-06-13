@@ -98,7 +98,7 @@ handle_event({call, From}, {initialize, LockedKeyring}, uninitialized, _Data) ->
 
 handle_event({call, From}, {confirm, ShareholderId, Share}, validation,
     #data{locked_keyring = LockedKeyring, shares = Shares, timer = TimerRef} = StateData) ->
-    #share{threshold = Threshold, x = X} = kds_keysharing:convert(Share),
+    #share{threshold = Threshold, x = X} = kds_keysharing:decode_share(Share),
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Threshold ->
             _ = erlang:cancel_timer(TimerRef),

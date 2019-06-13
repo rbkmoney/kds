@@ -466,7 +466,7 @@ init_invalid_args(C) ->
 init_operation_aborted_failed_to_recover(C) ->
     MasterKey = kds_crypto:key(),
     [WrongShare1, WrongShare2, _WrongShare3] = kds_keysharing:share(MasterKey, 2, 3),
-    InvalidShare = kds_keysharing:convert(#share{threshold = 2, x = 4, y = <<23224>>}),
+    InvalidShare = kds_keysharing:encode_share(#share{threshold = 2, x = 4, y = <<23224>>}),
     SigPrivateKeys = sig_private_keys(C),
     [{Id1, SigPrivateKey1}, {Id2, SigPrivateKey2}, {Id3, SigPrivateKey3}] =
         maps:to_list(SigPrivateKeys),
@@ -537,7 +537,7 @@ rekey_operation_aborted_wrong_masterkey(C) ->
 rekey_operation_aborted_failed_to_recover_confirm(C) ->
     MasterKey = kds_crypto:key(),
     [WrongShare1, _WrongShare2, _WrongShare3] = kds_keysharing:share(MasterKey, 2, 3),
-    InvalidShare = kds_keysharing:convert(#share{threshold = 2, x = 4, y = <<23224>>}),
+    InvalidShare = kds_keysharing:encode_share(#share{threshold = 2, x = 4, y = <<23224>>}),
     SigPrivateKeys = sig_private_keys(C),
     [{Id1, SigPrivateKey1}, {Id2, SigPrivateKey2}, {_Id3, _SigPrivateKey3}] =
         maps:to_list(SigPrivateKeys),
@@ -557,7 +557,7 @@ rekey_operation_aborted_failed_to_recover_validate(C) ->
     #{Id1 := SigPrivateKey1, Id2 := SigPrivateKey2, Id3 := SigPrivateKey3} = SigPrivateKeys,
     MasterKey = kds_crypto:key(),
     [WrongShare1, WrongShare2, _WrongShare3] = kds_keysharing:share(MasterKey, 2, 3),
-    InvalidShare = kds_keysharing:convert(#share{threshold = 2, x = 4, y = <<23224>>}),
+    InvalidShare = kds_keysharing:encode_share(#share{threshold = 2, x = 4, y = <<23224>>}),
 
     ok = kds_keyring_client:start_rekey(2, root_url(C)),
     {more_keys_needed, 1} = kds_keyring_client:confirm_rekey(Id1, TrueSignedShare1, root_url(C)),
@@ -654,7 +654,7 @@ rotate_invalid_status(C) ->
 
 rotate_failed_to_recover(C) ->
     [{Id1, MasterKey1}, {Id2, _MasterKey2} | _MasterKeys] = kds_ct_utils:lookup(master_keys, C),
-    MasterKey2 = kds_keysharing:convert(#share{threshold = 2, x = 4, y = <<23224>>}),
+    MasterKey2 = kds_keysharing:encode_share(#share{threshold = 2, x = 4, y = <<23224>>}),
     SigPrivateKeys = sig_private_keys(C),
     [_SigPrivateKey1, SigPrivateKey2, _SigPrivateKey3] = maps:values(SigPrivateKeys),
     _ = ?assertEqual(

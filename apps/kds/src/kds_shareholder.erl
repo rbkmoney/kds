@@ -32,7 +32,7 @@ get_all() ->
         true ->
             MergedShareholders;
         false ->
-            throw({invalid_configuration, shareholders})
+            erlang:error({invalid_configuration, shareholders})
     end.
 
 -spec get_by_id(binary()) -> {ok, shareholder()} | {error, not_found}.
