@@ -42,9 +42,7 @@ groups() ->
 -spec init_per_group(atom(), config()) -> config().
 
 init_per_group(file_storage_lifecycle, C) ->
-    application:set_env(kds, keyring_storage, kds_keyring_storage_file),
-    application:set_env(kds, keyring_path, keyring_storage_file_path(C)),
-    C;
+    kds_ct_utils:start_clear(C);
 
 init_per_group(_, C) ->
     C.
@@ -82,8 +80,3 @@ update(_C) ->
 
 delete(_C) ->
     ok = kds_keyring_storage:delete().
-
--spec keyring_storage_file_path(config()) -> _.
-
-keyring_storage_file_path(C) ->
-    filename:join([?config(priv_dir, C), "keyring"]).

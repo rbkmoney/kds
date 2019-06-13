@@ -1,49 +1,79 @@
 -module(kds_keyring_storage_file).
 -behaviour(kds_keyring_storage).
+-behaviour(gen_server).
 
+-export([start_link/1]).
 -export([create/1]).
 -export([read/0]).
 -export([update/1]).
 -export([delete/0]).
+-export([init/1, handle_call/3, handle_cast/2]).
 
--define(DEFAULT_KEYRING_PATH, "/var/lib/kds/keyring").
+-define(SERVER, ?MODULE).
+
+-record(state, {
+    keyring_path :: string()
+}).
+-type state() :: #state{}.
+
+-spec start_link(string()) -> {ok, pid()}.
+start_link(KeyringPath) ->
+    gen_server:start_link({local, ?SERVER}, ?MODULE, KeyringPath, []).
 
 -spec create(binary()) -> ok | {error, already_exists}.
 create(Keyring) ->
-    Path = application:get_env(kds, keyring_path, ?DEFAULT_KEYRING_PATH),
-    case filelib:is_regular(Path) of
-        false ->
-            ok = filelib:ensure_dir(Path),
-            ok = atomic_write(Path, Keyring);
-        true ->
-            {error, already_exists}
-    end.
+    gen_server:call(?SERVER, {create, Keyring}).
 
 -spec read() -> {ok, binary()} | {error, not_found}.
 read() ->
-    Path = application:get_env(kds, keyring_path, ?DEFAULT_KEYRING_PATH),
-    case file:read_file(Path) of
+    gen_server:call(?SERVER, read).
+
+-spec update(binary()) -> ok.
+update(Keyring) ->
+    gen_server:call(?SERVER, {update, Keyring}).
+
+-spec delete() -> ok.
+delete() ->
+    gen_server:call(?SERVER, delete).
+
+-spec init(string()) -> {ok, state()}.
+init(KeyringPath) ->
+    {ok, #state{keyring_path = KeyringPath}}.
+
+-spec handle_call(term(), term(), state()) -> {reply, term(), state()}.
+handle_call({create, Keyring}, _From, #state{keyring_path = KeyringPath} = State) ->
+    Reply = case filelib:is_regular(KeyringPath) of
+        false ->
+            ok = filelib:ensure_dir(KeyringPath),
+            ok = atomic_write(KeyringPath, Keyring);
+        true ->
+            {error, already_exists}
+    end,
+    {reply, Reply, State};
+handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
+    Reply = case file:read_file(KeyringPath) of
         {ok, Data} ->
             {ok, Data};
         {error, enoent} ->
             {error, not_found}
-    end.
-
--spec update(binary()) -> ok.
-update(Keyring) ->
-    Path = application:get_env(kds, keyring_path, ?DEFAULT_KEYRING_PATH),
-    ok = filelib:ensure_dir(Path),
-    ok = atomic_write(Path, Keyring).
-
--spec delete() -> ok.
-delete() ->
-    Path = application:get_env(kds, keyring_path, ?DEFAULT_KEYRING_PATH),
-    case file:delete(Path) of
+    end,
+    {reply, Reply, State};
+handle_call({update, Keyring}, _From, #state{keyring_path = KeyringPath} = State) ->
+    ok = filelib:ensure_dir(KeyringPath),
+    ok = atomic_write(KeyringPath, Keyring),
+    {reply, ok, State};
+handle_call(delete, _From, #state{keyring_path = KeyringPath} = State) ->
+    _ = case file:delete(KeyringPath) of
         ok ->
             ok;
         {error, enoent} ->
             ok
-    end.
+    end,
+    {reply, ok, State}.
+
+-spec handle_cast(term(), state()) -> {noreply, state()}.
+handle_cast(_Request, State) ->
+    {noreply, State}.
 
 atomic_write(Path, Keyring) ->
     TmpPath = tmp_keyring_path(Path),

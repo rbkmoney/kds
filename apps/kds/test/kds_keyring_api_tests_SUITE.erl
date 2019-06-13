@@ -109,13 +109,21 @@ groups() ->
 init_per_group(all_groups, C) ->
     C;
 
-init_per_group(keyring_errors, C) ->
-    C1 = kds_ct_utils:start_stash(C),
-    kds_ct_utils:start_clear(C1);
-
 init_per_group(_, C) ->
     C1 = kds_ct_utils:start_stash(C),
-    kds_ct_utils:start_clear(C1).
+    C2 = kds_ct_utils:start_clear(C1),
+    {ok, EncPrivateKey1} = file:read_file(filename:join(config(data_dir, C2), "enc.1.priv.json")),
+    {ok, EncPrivateKey2} = file:read_file(filename:join(config(data_dir, C2), "enc.2.priv.json")),
+    {ok, EncPrivateKey3} = file:read_file(filename:join(config(data_dir, C2), "enc.3.priv.json")),
+    EncPrivateKeys = #{<<"1">> => EncPrivateKey1, <<"2">> => EncPrivateKey2, <<"3">> => EncPrivateKey3},
+    {ok, SigPrivateKey1} = file:read_file(filename:join(config(data_dir, C2), "sig.1.priv.json")),
+    {ok, SigPrivateKey2} = file:read_file(filename:join(config(data_dir, C2), "sig.2.priv.json")),
+    {ok, SigPrivateKey3} = file:read_file(filename:join(config(data_dir, C2), "sig.3.priv.json")),
+    SigPrivateKeys = #{<<"1">> => SigPrivateKey1, <<"2">> => SigPrivateKey2, <<"3">> => SigPrivateKey3},
+    [
+        {enc_private_keys, EncPrivateKeys},
+        {sig_private_keys, SigPrivateKeys}
+    ] ++ C2.
 
 -spec end_per_group(atom(), config()) -> _.
 

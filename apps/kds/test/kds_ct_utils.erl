@@ -28,14 +28,6 @@ start_clear(Config) ->
     IP = "127.0.0.1",
     Port = 8022,
     RootUrl = "http://" ++ IP ++ ":" ++ integer_to_list(Port),
-    {ok, EncPrivateKey1} = file:read_file(filename:join(config(data_dir, Config), "enc.1.priv.json")),
-    {ok, EncPrivateKey2} = file:read_file(filename:join(config(data_dir, Config), "enc.2.priv.json")),
-    {ok, EncPrivateKey3} = file:read_file(filename:join(config(data_dir, Config), "enc.3.priv.json")),
-    EncPrivateKeys = #{<<"1">> => EncPrivateKey1, <<"2">> => EncPrivateKey2, <<"3">> => EncPrivateKey3},
-    {ok, SigPrivateKey1} = file:read_file(filename:join(config(data_dir, Config), "sig.1.priv.json")),
-    {ok, SigPrivateKey2} = file:read_file(filename:join(config(data_dir, Config), "sig.2.priv.json")),
-    {ok, SigPrivateKey3} = file:read_file(filename:join(config(data_dir, Config), "sig.3.priv.json")),
-    SigPrivateKeys = #{<<"1">> => SigPrivateKey1, <<"2">> => SigPrivateKey2, <<"3">> => SigPrivateKey3},
     Apps =
         genlib_app:start_application_with(scoper, [
             {storage, scoper_storage_logger}
@@ -113,9 +105,7 @@ start_clear(Config) ->
         ]),
     [
         {apps, lists:reverse(Apps)},
-        {root_url, genlib:to_binary(RootUrl)},
-        {enc_private_keys, EncPrivateKeys},
-        {sig_private_keys, SigPrivateKeys}
+        {root_url, genlib:to_binary(RootUrl)}
     ] ++ Config.
 
 -spec stop_clear(config()) -> ok.

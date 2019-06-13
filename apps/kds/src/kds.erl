@@ -13,6 +13,8 @@
 -export([start/2]).
 -export([stop /1]).
 
+-define(DEFAULT_KEYRING_PATH, "/var/lib/kds/keyring").
+
 %%
 %% API
 %%
@@ -55,7 +57,13 @@ init([]) ->
         start => {kds_keyring_sup, start_link, []},
         type => supervisor
     },
+    KeyringStorage = #{
+        id => kds_keyring_storage_file,
+        start => {kds_keyring_storage_file, start_link,
+            [genlib_app:env(?MODULE, keyring_path, ?DEFAULT_KEYRING_PATH)]}
+    },
     Procs = [
+        KeyringStorage,
         KeyringSupervisor,
         Service
     ],
