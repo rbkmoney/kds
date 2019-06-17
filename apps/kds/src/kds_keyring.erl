@@ -119,13 +119,13 @@ decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
 -spec encrypt(key(), keyring()) -> encrypted_keyring().
 encrypt(MasterKey, #{data := KeyringData, meta := KeyringMeta}) ->
     #{
-        data => kds_crypto:encrypt(MasterKey, marshall(KeyringData)),
+        data => base64:encode(kds_crypto:encrypt(MasterKey, marshall(KeyringData))),
         meta => KeyringMeta
     }.
 
 -spec decrypt(key(), encrypted_keyring()) -> {ok, keyring()} | {error, decryption_failed}.
 decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta}) ->
-    try unmarshall(kds_crypto:decrypt(MasterKey, EncryptedKeyringData)) of
+    try unmarshall(kds_crypto:decrypt(MasterKey, base64:decode(EncryptedKeyringData))) of
         KeyringData ->
             case KeyringMeta of
                 undefined ->

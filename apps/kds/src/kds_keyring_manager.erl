@@ -35,7 +35,10 @@
 -define(STATEM, ?MODULE).
 
 -record(data, {
-    keyring :: kds_keyring:keyring() | undefined
+    keyring :: #{
+        data := undefined | kds_keyring:keyring_data(),
+        meta := kds_keyring:keyring_meta(kds_keyring:key_id())
+    }
 }).
 
 -type data() :: #data{}.
@@ -147,11 +150,11 @@ call(Event) ->
 -spec init(_) -> {ok, locked | not_initialized, data()}.
 init([]) ->
     try kds_keyring_storage:read() of
-        _Keyring ->
-            {ok, locked, #data{keyring = undefined}}
+        #{meta := KeyringMeta} ->
+            {ok, locked, #data{keyring = #{data => undefined, meta => KeyringMeta}}}
     catch
         not_found ->
-            {ok, not_initialized, #data{}}
+            {ok, not_initialized, #data{keyring = #{data => undefined, meta => #{keys => #{}}}}}
     end.
 
 -spec handle_event(gen_statem:event_type(), term(), state(), data()) ->
@@ -199,8 +202,8 @@ handle_event({call, From}, cancel_unlock, locked, _StateData) ->
 
 %% unlocked events
 
-handle_event({call, From}, lock, unlocked, StateData) ->
-    {next_state, locked, StateData#data{keyring = undefined}, {reply, From, ok}};
+handle_event({call, From}, lock, unlocked, #data{keyring = #{meta := KeyringMeta}} = StateData) ->
+    {next_state, locked, StateData#data{keyring = #{data => undefined, meta => KeyringMeta}}, {reply, From, ok}};
 handle_event({call, From}, get_keyring, unlocked, #data{keyring = Keyring}) ->
     {keep_state_and_data, {reply, From, {ok, Keyring}}};
 handle_event({call, From}, start_rotate, unlocked, #data{keyring = OldKeyring}) ->

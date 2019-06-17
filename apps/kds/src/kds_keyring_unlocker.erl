@@ -127,7 +127,7 @@ handle_event({call, From}, get_status, State, #data{timer = TimerRef, shares = V
     },
     {keep_state_and_data, {reply, From, Status}};
 handle_event({call, From}, cancel, _State, #data{timer = TimerRef}) ->
-    _ = erlang:cancel_timer(TimerRef),
+    _ = (catch erlang:cancel_timer(TimerRef)),
     {next_state, uninitialized, #data{}, {reply, From, ok}};
 handle_event(info, {timeout, _TimerRef, lifetime_expired}, _State, _Data) ->
     {next_state, uninitialized, #data{}, []};
