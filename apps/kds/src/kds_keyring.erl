@@ -6,6 +6,8 @@
 -export([get_keys/1]).
 -export([get_current_key/1]).
 
+-export([decode_encrypted_keyring/1]).
+
 -export([encrypt/2]).
 -export([decrypt/2]).
 -export([marshall/1]).
@@ -18,7 +20,7 @@
 -export_type([key_id/0]).
 -export_type([keyring/0]).
 -export_type([keyring_data/0]).
--export_type([keyring_meta/0]).
+-export_type([keyring_meta/1]).
 -export_type([encrypted_keyring/0]).
 
 -type masterkey() :: kds_keysharing:masterkey().
@@ -26,21 +28,21 @@
 -type key_id() :: byte().
 -type encrypted_keyring() :: #{
     data := binary(),
-    meta := keyring_meta()
+    meta := keyring_meta(key_id())
 }.
 
 -type key_meta() :: #{
     retired := boolean()
 }.
--type keyring_meta() :: #{
+-type keyring_meta(KeyId) :: #{
     keys := #{
-        key_id() => key_meta()
+        KeyId => key_meta()
     }
 }.
 
 -type keyring() :: #{
     data := keyring_data(),
-    meta := keyring_meta()
+    meta := keyring_meta(key_id())
 }.
 
 -type keyring_data() :: #{
@@ -106,6 +108,14 @@ get_current_key(#{data := #{current_key := CurrentKeyId, keys := Keys}}) ->
 
 %%
 
+-spec decode_encrypted_keyring(#{data := binary(), meta := keyring_meta(binary())}) -> encrypted_keyring().
+decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
+    Keyring#{
+        meta => #{
+            keys => decode_number_key_map(KeysMeta)
+        }
+    }.
+
 -spec encrypt(key(), keyring()) -> encrypted_keyring().
 encrypt(MasterKey, #{data := KeyringData, meta := KeyringMeta}) ->
     #{
@@ -170,3 +180,6 @@ validate_masterkey(MasterKey, EncryptedOldKeyring) ->
         {error, decryption_failed} ->
             {error, wrong_masterkey}
     end.
+
+decode_number_key_map(Map) ->
+    maps:fold(fun (K, V, Acc) -> Acc#{binary_to_integer(K) => V} end, #{}, Map).

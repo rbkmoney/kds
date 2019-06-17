@@ -34,11 +34,11 @@ start_link(KeyringPath) ->
 create(Keyring) ->
     gen_server:call(?SERVER, {create, Keyring}).
 
--spec read() -> {ok, binary()} | {error, not_found}.
+-spec read() -> {ok, kds_keyring:encrypted_keyring()} | {error, not_found}.
 read() ->
     gen_server:call(?SERVER, read).
 
--spec update(binary()) -> ok.
+-spec update(kds_keyring:encrypted_keyring()) -> ok.
 update(Keyring) ->
     gen_server:call(?SERVER, {update, Keyring}).
 
@@ -65,7 +65,8 @@ handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
         {ok, Data} ->
             case jsx:is_json(Data) of
                 true ->
-                    DecodedData = jsx:decode(Data, [return_maps, {labels, existing_atom}]),
+                    DecodedData = kds_keyring:decode_encrypted_keyring(
+                        jsx:decode(Data, [return_maps, {labels, attempt_atom}])),
                     {ok, #{data => maps:get(data, DecodedData), meta => maps:get(meta, DecodedData)}};
                 false ->
                     {ok, #{data => Data, meta => undefined}}
