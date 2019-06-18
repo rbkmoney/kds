@@ -22,6 +22,8 @@
 -export([validate_rekey/2]).
 -export([cancel_rekey/0]).
 -export([get_status/0]).
+-export([update_meta/1]).
+-export([get_meta/0]).
 
 %% gen_statem.
 -export([init/1]).
@@ -134,6 +136,14 @@ cancel_rekey() ->
 -spec get_status() -> status().
 get_status() ->
     call(get_status).
+
+-spec update_meta(kds_keyring:keyring_meta(kds_keyring:key_id())) -> ok.
+update_meta(KeyringMeta) ->
+    call({update_meta, KeyringMeta}).
+
+-spec get_meta() ->kds_keyring:keyring_meta(kds_keyring:key_id()).
+get_meta() ->
+    call(get_meta).
 
 call(Event) ->
     case gen_statem:call(?STATEM, Event) of
@@ -248,8 +258,18 @@ handle_event({call, From}, cancel_rekey, unlocked, _StateData) ->
     ok = kds_keyring_rekeyer:cancel(),
     {keep_state_and_data, {reply, From, ok}};
 
+%% common events
+
 handle_event({call, From}, get_status, State, _Data) ->
     {keep_state_and_data, {reply, From, {ok, generate_status(State)}}};
+handle_event({call, From}, {update_meta, UpdateKeyringMeta}, _State,
+    #data{keyring = #{meta := KeyringMeta} = Keyring} = Data) ->
+    NewKeyringMeta = kds_keyring_meta:update_meta(KeyringMeta, UpdateKeyringMeta),
+    EncryptedKeyring = kds_keyring_storage:read(),
+    ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
+    {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}};
+handle_event({call, From}, get_meta, _State, #{meta := KeyringMeta}) ->
+    {keep_state_and_data, {reply, From, {ok, KeyringMeta}}};
 handle_event({call, From}, _Event, State, _StateData) ->
     {keep_state_and_data, {reply, From, {error, {invalid_status, State}}}}.
 

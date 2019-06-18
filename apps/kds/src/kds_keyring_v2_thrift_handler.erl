@@ -175,7 +175,21 @@ handle_function_('GetState', [], _Context, _Opts) ->
     case kds_keyring_manager:get_status() of
         Status ->
             {ok, encode_state(Status)}
-    end.
+    end;
+
+handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
+    DecodedKeyringMeta = decode_keyring_meta(KeyringMeta),
+    case kds_keyring_meta:validate_meta(DecodedKeyringMeta) of
+        true ->
+            kds_keyring_manager:update_meta(DecodedKeyringMeta),
+            {ok, ok};
+        false ->
+            raise(#'InvalidKeyringMeta'{})
+    end;
+handle_function_('GetKeyringMeta', [KeyringMeta], _Context, _Opts) ->
+    KeyringMeta = kds_keyring_manager:get_meta(),
+    EncodedKeyringMeta = encode_keyring_meta(KeyringMeta),
+    {ok, EncodedKeyringMeta}.
 
 -spec encode_encrypted_shares([kds_keysharing:encrypted_master_key_share()]) ->
     [encrypted_masterkey_share()].
@@ -265,6 +279,29 @@ encode_state(#{
             }
         }
     }.
+
+decode_keyring_meta(#'KeyringMeta'{
+    keys_meta = KeysMeta
+}) ->
+    DecodedKeysMeta = maps:fold(
+        fun (K, #'KeyMeta'{retired = Retired}, Acc) ->
+            Acc#{K => #{retired => Retired}}
+        end,
+        #{},
+        KeysMeta),
+    #{keys => DecodedKeysMeta}.
+
+encode_keyring_meta(#{
+    keys := KeysMeta
+}) ->
+    EncodedKeysMeta = maps:fold(
+        fun (K, #{retired := Retired}, Acc) ->
+            Acc#{K, #'KeyMeta'{retired = Retired}}
+        end,
+        #{},
+        KeysMeta
+    ),
+    #'KeyringMeta'{keys_meta = EncodedKeysMeta}.
 
 -spec raise(_) -> no_return().
 raise(Exception) ->
