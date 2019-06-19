@@ -296,7 +296,7 @@ encode_keyring_meta(#{
 }) ->
     EncodedKeysMeta = maps:fold(
         fun (K, #{retired := Retired}, Acc) ->
-            Acc#{K, #'KeyMeta'{retired = Retired}}
+            Acc#{K => #'KeyMeta'{retired = Retired}}
         end,
         #{},
         KeysMeta

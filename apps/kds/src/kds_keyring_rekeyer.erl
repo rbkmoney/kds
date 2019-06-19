@@ -45,6 +45,7 @@
 }.
 
 -type encrypted_keyring() :: kds_keyring:encrypted_keyring().
+-type encrypted_keyring_diff() :: kds_keyring:encrypted_keyring_diff().
 
 -type state() :: uninitialized | validation.
 
@@ -85,7 +86,7 @@ start_validation() ->
 
 -spec validate(shareholder_id(), masterkey_share()) ->
     {ok, {more, integer()}} |
-    {ok, {done, encrypted_keyring()}} |
+    {ok, {done, encrypted_keyring_diff()}} |
     {error, validate_errors() | invalid_activity_errors()}.
 
 validate(ShareholderId, Share) ->
@@ -274,14 +275,15 @@ confirm_operation(EncryptedOldKeyring, AllShares) ->
     end.
 
 -spec validate_operation(threshold(), masterkey_shares(), encrypted_keyring()) ->
-    {ok, {done, encrypted_keyring()}} | {error, validate_errors()}.
+    {ok, {done, encrypted_keyring_diff()}} | {error, validate_errors()}.
 
 validate_operation(Threshold, Shares, EncryptedKeyring) ->
     case kds_keysharing:validate_shares(Threshold, Shares) of
         {ok, MasterKey} ->
             case kds_keyring:decrypt(MasterKey, EncryptedKeyring) of
                 {ok, _DecryptedKeyring} ->
-                    {ok, {done, EncryptedKeyring}};
+                    Diff = #{data => maps:get(data, EncryptedKeyring)},
+                    {ok, {done, Diff}};
                 {error, decryption_failed} ->
                     {error, {operation_aborted, failed_to_decrypt_keyring}}
             end;

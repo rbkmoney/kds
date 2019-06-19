@@ -169,7 +169,9 @@ update_keyring(OldKeyring, EncryptedOldKeyring, AllShares) ->
                 {ok, OldKeyring} ->
                     NewKeyring = kds_keyring:rotate(OldKeyring),
                     EncryptedNewKeyring = kds_keyring:encrypt(MasterKey, NewKeyring),
-                    {ok, {done, {EncryptedNewKeyring, NewKeyring}}};
+                    DiffKeyring = genlib_map:diff(OldKeyring, NewKeyring),
+                    DiffEncryptedKeyring = genlib_map:diff(EncryptedOldKeyring, EncryptedNewKeyring),
+                    {ok, {done, {DiffEncryptedKeyring, DiffKeyring}}};
                 {error, Error} ->
                     {error, {operation_aborted, Error}}
             end;

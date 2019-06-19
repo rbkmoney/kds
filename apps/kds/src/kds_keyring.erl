@@ -6,6 +6,7 @@
 -export([get_keys/1]).
 -export([get_current_key/1]).
 
+-export([apply_changes/2]).
 -export([decode_encrypted_keyring/1]).
 
 -export([encrypt/2]).
@@ -19,6 +20,8 @@
 -export_type([key/0]).
 -export_type([key_id/0]).
 -export_type([keyring/0]).
+-export_type([keyring_diff/0]).
+-export_type([encrypted_keyring_diff/0]).
 -export_type([keyring_data/0]).
 -export_type([keyring_meta/1]).
 -export_type([encrypted_keyring/0]).
@@ -29,6 +32,16 @@
 -type encrypted_keyring() :: #{
     data := binary(),
     meta := keyring_meta(key_id())
+}.
+
+-type keyring_diff() :: #{
+    data => keyring_data(),
+    meta => keyring_meta(key_id())
+}.
+
+-type encrypted_keyring_diff() :: #{
+    data => binary(),
+    meta => keyring_meta(key_id())
 }.
 
 -type key_meta() :: #{
@@ -105,6 +118,15 @@ get_keys(#{data := #{keys := Keys}}) ->
 get_current_key(#{data := #{current_key := CurrentKeyId, keys := Keys}}) ->
     CurrentKey = maps:get(CurrentKeyId, Keys),
     {CurrentKeyId, CurrentKey}.
+
+-spec apply_changes(keyring() | encrypted_keyring(), keyring_diff() | encrypted_keyring_diff()) ->
+    keyring() | encrypted_keyring().
+apply_changes(#{data := OldData, meta := OldMeta}, DiffKeyring) ->
+    DiffMeta = maps:get(meta, DiffKeyring, #{}),
+    #{
+        data => maps:get(data, DiffKeyring, OldData),
+        meta => kds_keyring_meta:update_add_meta(OldMeta, DiffMeta)
+    }.
 
 %%
 

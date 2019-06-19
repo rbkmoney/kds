@@ -3,6 +3,7 @@
 %% API
 -export([get_keyring_meta_from_keyring_data/1]).
 -export([update_meta/2]).
+-export([update_add_meta/2]).
 -export([validate_meta/1]).
 
 -type keyring_meta() :: kds_keyring:keyring_meta(kds_keyring:key_id()).
@@ -22,6 +23,17 @@ update_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
             Acc#{K => maps:merge(V, UpdateKeyMeta)}
         end,
         #{}, OldKeysMeta),
+    OldMeta#{keys => NewKeysMeta}.
+
+-spec update_add_meta(keyring_meta(), keyring_meta()) -> keyring_meta().
+update_add_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
+    UpdateKeysMeta = maps:get(keys, UpdateMeta, #{}),
+    NewKeysMeta = maps:fold(
+        fun (K, V, Acc) ->
+            OldKeyMeta = maps:get(K, OldKeysMeta, #{}),
+            Acc#{K => maps:merge(OldKeyMeta, V)}
+        end,
+        OldKeysMeta, UpdateKeysMeta),
     OldMeta#{keys => NewKeysMeta}.
 
 -spec validate_meta(keyring_meta()) -> boolean().

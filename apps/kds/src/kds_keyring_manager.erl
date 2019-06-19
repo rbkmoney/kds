@@ -175,13 +175,16 @@ init([]) ->
 handle_event({call, From}, {initialize, Threshold}, not_initialized, _StateData) ->
     Result = kds_keyring_initializer:initialize(Threshold),
     {keep_state_and_data, {reply, From, Result}};
-handle_event({call, From}, {validate_init, ShareholderId, Share}, not_initialized, StateData) ->
+handle_event({call, From}, {validate_init, ShareholderId, Share}, not_initialized,
+    #data{keyring = OldKeyring} = StateData) ->
     case kds_keyring_initializer:validate(ShareholderId, Share) of
         {ok, {more, _More}} = Result ->
             {keep_state_and_data, {reply, From, Result}};
         {ok, {done, {EncryptedKeyring, DecryptedKeyring}}} ->
-            ok = kds_keyring_storage:create(EncryptedKeyring),
-            NewStateData = StateData#data{keyring = DecryptedKeyring},
+            NewEncryptedKeyring = kds_keyring:apply_changes(OldKeyring, EncryptedKeyring),
+            ok = kds_keyring_storage:create(NewEncryptedKeyring),
+            NewKeyring = kds_keyring:apply_changes(OldKeyring, DecryptedKeyring),
+            NewStateData = StateData#data{keyring = NewKeyring},
             {next_state, unlocked, NewStateData, {reply, From, ok}};
         {error, _Error} = Result ->
             {keep_state_and_data, {reply, From, Result}}
@@ -196,12 +199,14 @@ handle_event({call, From}, start_unlock, locked, _StateData) ->
     LockedKeyring = kds_keyring_storage:read(),
     Result = kds_keyring_unlocker:initialize(LockedKeyring),
     {keep_state_and_data, {reply, From, Result}};
-handle_event({call, From}, {confirm_unlock, ShareholderId, Share}, locked, StateData) ->
+handle_event({call, From}, {confirm_unlock, ShareholderId, Share}, locked,
+    #data{keyring = OldKeyring} = StateData) ->
     case kds_keyring_unlocker:confirm(ShareholderId, Share) of
         {ok, {more, _More}} = Result ->
             {keep_state_and_data, {reply, From, Result}};
-        {ok, {done, UnlockedKeyring}} ->
-            NewStateData = StateData#data{keyring = UnlockedKeyring},
+        {ok, {done, KeyringDiff}} ->
+            NewKeyring = kds_keyring:apply_changes(OldKeyring, KeyringDiff),
+            NewStateData = StateData#data{keyring = NewKeyring},
             {next_state, unlocked, NewStateData, {reply, From, ok}};
         {error, Error} ->
             {keep_state_and_data, {reply, From, {error, Error}}}
@@ -220,12 +225,16 @@ handle_event({call, From}, start_rotate, unlocked, #data{keyring = OldKeyring}) 
     EncryptedKeyring = kds_keyring_storage:read(),
     Result = kds_keyring_rotator:initialize(OldKeyring, EncryptedKeyring),
     {keep_state_and_data, {reply, From, Result}};
-handle_event({call, From}, {confirm_rotate, ShareholderId, Share}, unlocked, StateData) ->
+handle_event({call, From}, {confirm_rotate, ShareholderId, Share}, unlocked,
+    #data{keyring = OldKeyring} = StateData) ->
     case kds_keyring_rotator:confirm(ShareholderId, Share) of
         {ok, {more, _More}} = Result ->
             {keep_state_and_data, {reply, From, Result}};
-        {ok, {done, {EncryptedNewKeyring, NewKeyring}}} ->
-            ok = kds_keyring_storage:update(EncryptedNewKeyring),
+        {ok, {done, {EncryptedKeyringDiff, KeyringDiff}}} ->
+            OldEncryptedKeyring = kds_keyring_storage:read(),
+            NewEncryptedKeyring = kds_keyring:apply_changes(OldEncryptedKeyring, EncryptedKeyringDiff),
+            ok = kds_keyring_storage:update(NewEncryptedKeyring),
+            NewKeyring = kds_keyring:apply_changes(OldKeyring, KeyringDiff),
             NewStateData = StateData#data{keyring = NewKeyring},
             {keep_state, NewStateData, {reply, From, ok}};
         {error, Error} ->
@@ -248,8 +257,10 @@ handle_event({call, From}, {validate_rekey, ShareholderId, Share}, unlocked, _St
     case kds_keyring_rekeyer:validate(ShareholderId, Share) of
         {ok, {more, _More}} = Result ->
             {keep_state_and_data, {reply, From, Result}};
-        {ok, {done, EncryptedNewKeyring}} ->
-            ok = kds_keyring_storage:update(EncryptedNewKeyring),
+        {ok, {done, EncryptedKeyringDiff}} ->
+            OldEncryptedKeyring = kds_keyring_storage:read(),
+            NewEncryptedKeyring = kds_keyring:apply_changes(OldEncryptedKeyring, EncryptedKeyringDiff),
+            ok = kds_keyring_storage:update(NewEncryptedKeyring),
             {keep_state_and_data, {reply, From, ok}};
         {error, Error} ->
             {keep_state_and_data, {reply, From, {error, Error}}}
