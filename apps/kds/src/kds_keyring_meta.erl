@@ -2,6 +2,7 @@
 
 %% API
 -export([get_keyring_meta_from_keyring_data/1]).
+-export([get_changes/2]).
 -export([update_meta/2]).
 -export([update_add_meta/2]).
 -export([validate_meta/1]).
@@ -13,6 +14,26 @@ get_keyring_meta_from_keyring_data(KeyringData) ->
     Keys = maps:get(keys, KeyringData),
     KeysMeta = maps:map(fun (_KeyId, _Key) -> #{retired => false} end, Keys),
     #{keys => KeysMeta}.
+
+-spec get_changes(keyring_meta(), keyring_meta()) -> kds_keyring:keyring_meta_diff().
+get_changes(#{keys := OldKeysMeta}, #{keys := NewKeysMeta}) ->
+    UpdateKeysMeta = maps:fold(
+        fun (K, V, Acc) ->
+            case maps:get(K, OldKeysMeta, #{}) of
+                V ->
+                    Acc;
+                _DifferentKeyMeta ->
+                    Acc#{K => V}
+            end
+        end,
+        #{}, NewKeysMeta
+    ),
+    case maps:size(UpdateKeysMeta) of
+        0 ->
+            #{};
+        _UpdatedKeys ->
+            #{keys => UpdateKeysMeta}
+    end.
 
 -spec update_meta(keyring_meta(), keyring_meta()) -> keyring_meta().
 update_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
