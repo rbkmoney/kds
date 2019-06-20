@@ -9,7 +9,7 @@
 %% Types
 %%
 
--type service_code() :: keyring_v2.
+-type service_name() :: keyring_v2.
 
 -export_type([service_code/0]).
 
