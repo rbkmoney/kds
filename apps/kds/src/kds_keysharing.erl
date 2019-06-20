@@ -49,8 +49,9 @@
 share(Secret, Threshold, Count) ->
     try
         [encode_share(Share) || Share <- shamir:share(Secret, Threshold, Count)]
-    catch Class:Reason -> %% FIXME can't catch exact errors because shamir doesn't process them itself
-        _ = logger:error("keysharing failed with ~p ~p", [Class, Reason]),
+    catch error:Reason:Stacktrace -> %% FIXME can't catch exact errors because shamir doesn't process them itself
+        _ = logger:error("keysharing failed with ~p", [Reason],
+            #{stacktrace => genlib_format:format_stacktrace(Stacktrace)}),
         throw(keysharing_failed)
     end.
 
@@ -62,8 +63,9 @@ recover(Shares) when is_map(Shares) ->
 recover(Shares) ->
     try
         {ok, shamir:recover([decode_share(Share) || Share <- Shares])}
-    catch Class:Reason -> %% FIXME can't catch exact errors because shamir doesn't process them itself
-        _ = logger:error("keysharing recover failed ~p ~p", [Class, Reason]),
+    catch error:Reason:Stacktrace -> %% FIXME can't catch exact errors because shamir doesn't process them itself
+        _ = logger:error("keysharing recover failed ~p", [Reason],
+            #{stacktrace => genlib_format:format_stacktrace(Stacktrace)}),
         {error, failed_to_recover}
     end.
 
