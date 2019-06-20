@@ -13,13 +13,16 @@
 -export([update/1]).
 -export([delete/1]).
 
+-export([create_old_format/1]).
+
 -type config() :: term().
 
 -spec all() -> [{group, atom()}].
 
 all() ->
     [
-        {group, file_storage_lifecycle}
+        {group, file_storage_lifecycle},
+        {group, backward_compatibility}
     ].
 
 -spec groups() -> [{atom(), list(), [atom()]}].
@@ -28,6 +31,13 @@ groups() ->
     [
         {file_storage_lifecycle, [sequence], [
             create,
+            already_exists,
+            read,
+            update,
+            delete
+        ]},
+        {backward_compatibility, [sequence], [
+            create_old_format,
             already_exists,
             read,
             update,
@@ -53,7 +63,7 @@ end_per_group(_, C) ->
 -spec create(config()) -> _.
 
 create(_C) ->
-    Keyring = #{data => <<"initial">>, meta => #{keys => #{}}},
+    Keyring = #{data => <<"initial">>, meta => undefined},
     ok = kds_keyring_storage:create(Keyring).
 
 -spec already_exists(config()) -> _.
@@ -65,7 +75,7 @@ already_exists(_C) ->
 -spec read(config()) -> _.
 
 read(_C) ->
-    #{data := <<"initial">>, meta := #{keys := #{}}} = kds_keyring_storage:read().
+    #{data := <<"initial">>, meta := undefined} = kds_keyring_storage:read().
 
 -spec update(config()) -> _.
 
@@ -78,3 +88,20 @@ update(_C) ->
 
 delete(_C) ->
     ok = kds_keyring_storage:delete().
+
+-spec create_old_format(config()) -> _.
+
+create_old_format(C) ->
+    KeyringFile = application:get_env(kds, keyring_path, filename:join(config(priv_dir, C), "keyring")),
+    ok = file:write_file(KeyringFile, <<"initial">>).
+
+config(Key, Config) ->
+    config(Key, Config, undefined).
+
+config(Key, Config, Default) ->
+    case lists:keysearch(Key, 1, Config) of
+        {value, {Key, Val}} ->
+            Val;
+        _ ->
+            Default
+    end.

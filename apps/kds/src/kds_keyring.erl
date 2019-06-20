@@ -31,7 +31,7 @@
 -type key_id() :: byte().
 -type encrypted_keyring() :: #{
     data := binary(),
-    meta := keyring_meta(key_id())
+    meta := keyring_meta(key_id()) | undefined
 }.
 
 -type keyring_diff() :: #{
@@ -136,7 +136,9 @@ decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
         meta => #{
             keys => decode_number_key_map(KeysMeta)
         }
-    }.
+    };
+decode_encrypted_keyring(#{meta := <<"undefined">>} = Keyring)->
+    Keyring#{meta => undefined}.
 
 -spec encrypt(key(), keyring()) -> encrypted_keyring().
 encrypt(MasterKey, #{data := KeyringData, meta := KeyringMeta}) ->

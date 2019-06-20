@@ -37,13 +37,13 @@
 -type shareholder_id() :: kds_shareholder:shareholder_id().
 -type masterkey_share() :: kds_keysharing:masterkey_share().
 -type masterkey_shares() :: kds_keysharing:masterkey_shares().
--type diff_keyring() :: kds_keyring:diff_keyring().
+-type keyring_diff() :: kds_keyring:keyring_diff().
 -type locked_keyring() :: kds_keyring:encrypted_keyring().
 -type unlock_errors() ::
     wrong_masterkey | failed_to_recover.
 -type invalid_activity() :: {error, {invalid_activity, {unlock, state()}}}.
 -type unlock_resp() ::
-    {ok, {done, diff_keyring()}} |
+    {ok, {done, keyring_diff()}} |
     {ok, {more, non_neg_integer()}} |
     {error, {operation_aborted, unlock_errors()}}.
 
@@ -159,7 +159,7 @@ get_lifetime(TimerRef) ->
     end.
 
 -spec unlock(locked_keyring(), masterkey_shares()) ->
-    {ok, {done, diff_keyring()}} | {error, {operation_aborted, unlock_errors()}}.
+    {ok, {done, keyring_diff()}} | {error, {operation_aborted, unlock_errors()}}.
 
 unlock(LockedKeyring, AllShares) ->
     case kds_keysharing:recover(AllShares) of
