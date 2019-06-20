@@ -18,13 +18,13 @@
 }).
 -type state() :: #state{}.
 
--spec child_spec(module()) -> supervisor:child_spec().
+-spec child_spec(module()) -> {ok, supervisor:child_spec()}.
 child_spec(Module) ->
-    #{
-        id => kds_keyring_storage_file,
-        start => {kds_keyring_storage_file, start_link,
+    {ok, #{
+        id => ?SERVER,
+        start => {?MODULE, start_link,
             [genlib_app:env(Module, keyring_path, ?DEFAULT_KEYRING_PATH)]}
-    }.
+    }}.
 
 -spec start_link(string()) -> {ok, pid()}.
 start_link(KeyringPath) ->
