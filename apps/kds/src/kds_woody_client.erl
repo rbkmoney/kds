@@ -23,7 +23,7 @@ call(ServiceCode, Function, Args, RootUrl) ->
 
 -spec call(atom(), atom(), list(), woody:url(), woody_client:options() | map()) -> result().
 call(ServiceCode, Function, Args, RootUrl, ExtraOpts) ->
-    Request = {kds_thrift_services:thrift(ServiceCode), Function, Args},
+    Request = {kds_thrift_services:service(ServiceCode), Function, Args},
     Path = genlib:to_binary(kds_thrift_services:path(ServiceCode)),
     CallOpts = maps:merge(ExtraOpts, #{
         url => <<RootUrl/binary, Path/binary>>,

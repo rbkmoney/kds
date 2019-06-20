@@ -1,9 +1,8 @@
 -module(kds_thrift_services).
 
--export([handler_spec/1]).
+-export([http_handler/1]).
 -export([path/1]).
--export([thrift/1]).
--export([handler_module/1]).
+-export([service/1]).
 
 %%
 %% Types
@@ -11,32 +10,24 @@
 
 -type service_name() :: keyring_v2.
 
--export_type([service_code/0]).
-
-%% Internal types
-
--type path() :: woody:path().
--type thrift_service() :: woody:service().
--type hadler_spec() :: woody:handler(list()).
-
--type service_hadler_spec() :: {path(), {thrift_service(), hadler_spec()}}.
+-export_type([service_name/0]).
 
 %%
 %% API
 %%
 
--spec handler_spec(service_code()) -> service_hadler_spec().
-handler_spec(Code) ->
-    {path(Code), {thrift(Code), handler_module(Code)}}.
+-spec http_handler(service_name()) -> woody:http_handler(woody:th_handler()).
+http_handler(Code) ->
+    {path(Code), {service(Code), handler_module(Code)}}.
 
--spec path(service_code()) -> path().
+-spec path(service_name()) -> woody:path().
 path(keyring_v2) ->
     "/v2/keyring".
 
--spec thrift(service_code()) -> thrift_service().
-thrift(keyring_v2) ->
+-spec service(service_name()) -> woody:service().
+service(keyring_v2) ->
     {cds_proto_keyring_thrift, 'Keyring'}.
 
--spec handler_module(service_code()) -> hadler_spec().
+-spec handler_module(service_name()) -> woody:handler(list()).
 handler_module(keyring_v2) ->
     {kds_keyring_v2_thrift_handler, []}.

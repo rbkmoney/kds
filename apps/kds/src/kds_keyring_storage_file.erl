@@ -2,6 +2,7 @@
 -behaviour(kds_keyring_storage).
 -behaviour(gen_server).
 
+-export([child_spec/1]).
 -export([start_link/1]).
 -export([create/1]).
 -export([read/0]).
@@ -10,11 +11,20 @@
 -export([init/1, handle_call/3, handle_cast/2]).
 
 -define(SERVER, ?MODULE).
+-define(DEFAULT_KEYRING_PATH, "/var/lib/kds/keyring").
 
 -record(state, {
     keyring_path :: string()
 }).
 -type state() :: #state{}.
+
+-spec child_spec(module()) -> supervisor:child_spec().
+child_spec(Module) ->
+    #{
+        id => kds_keyring_storage_file,
+        start => {kds_keyring_storage_file, start_link,
+            [genlib_app:env(Module, keyring_path, ?DEFAULT_KEYRING_PATH)]}
+    }.
 
 -spec start_link(string()) -> {ok, pid()}.
 start_link(KeyringPath) ->

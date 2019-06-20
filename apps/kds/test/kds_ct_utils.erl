@@ -110,8 +110,7 @@ start_clear(Config) ->
 
 -spec stop_clear(config()) -> ok.
 stop_clear(C) ->
-    _ = (catch kds_keyring_storage_env:delete()),
-    _ = file:delete(filename:join(config(priv_dir, C), "keyring")),
+    _ = (catch kds_keyring_storage_file:delete()),
     [ok = application:stop(App) || App <- config(apps, C)],
     stop_stash(C).
 

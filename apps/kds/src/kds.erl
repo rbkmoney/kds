@@ -13,8 +13,6 @@
 -export([start/2]).
 -export([stop /1]).
 
--define(DEFAULT_KEYRING_PATH, "/var/lib/kds/keyring").
-
 %%
 %% API
 %%
@@ -41,7 +39,7 @@ init([]) ->
         kds_thrift_service_sup,
         #{
             handlers => [
-                kds_thrift_services:handler_spec(keyring_v2)
+                kds_thrift_services:http_handler(keyring_v2)
             ],
             event_handler     => scoper_woody_event_handler,
             ip                => IP,
@@ -57,13 +55,10 @@ init([]) ->
         start => {kds_keyring_sup, start_link, []},
         type => supervisor
     },
-    KeyringStorage = #{
-        id => kds_keyring_storage_file,
-        start => {kds_keyring_storage_file, start_link,
-            [genlib_app:env(?MODULE, keyring_path, ?DEFAULT_KEYRING_PATH)]}
-    },
+    KeyringStorage = genlib_app:env(?MODULE, keyring_storage, kds_keyring_storage_file),
+    KeyringStorageSpec = KeyringStorage:child_spec(?MODULE),
     Procs = [
-        KeyringStorage,
+        KeyringStorageSpec,
         KeyringSupervisor,
         Service
     ],
