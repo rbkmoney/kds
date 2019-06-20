@@ -36,7 +36,9 @@ start_clear(Config) ->
             {ip, IP},
             {port, Port},
             {keyring_storage, kds_keyring_storage_file},
-            {keyring_path, filename:join(config(priv_dir, Config), "keyring")},
+            {keyring_storage_opts, #{
+                keyring_path => filename:join(config(priv_dir, Config), "keyring")
+            }},
             {transport_opts, #{}},
             {protocol_opts, #{
                 request_timeout => 60000

@@ -18,12 +18,12 @@
 }).
 -type state() :: #state{}.
 
--spec child_spec(module()) -> {ok, supervisor:child_spec()}.
-child_spec(Module) ->
+-spec child_spec(map()) -> {ok, supervisor:child_spec()}.
+child_spec(StorageOpts) ->
+    KeyringPath = maps:get(keyring_path, StorageOpts, ?DEFAULT_KEYRING_PATH),
     {ok, #{
         id => ?SERVER,
-        start => {?MODULE, start_link,
-            [genlib_app:env(Module, keyring_path, ?DEFAULT_KEYRING_PATH)]}
+        start => {?MODULE, start_link, [KeyringPath]}
     }}.
 
 -spec start_link(string()) -> {ok, pid()}.
