@@ -92,8 +92,9 @@ delete(_C) ->
 -spec create_old_format(config()) -> _.
 
 create_old_format(C) ->
-    KeyringFile = application:get_env(kds, keyring_path, filename:join(config(priv_dir, C), "keyring")),
-    ok = file:write_file(KeyringFile, <<"initial">>).
+    KeyringStorageOpts = application:get_env(kds, keyring_storage_opts, #{}),
+    KeyringPath = maps:get(keyring_path, KeyringStorageOpts,  filename:join(config(priv_dir, C), "keyring")),
+    ok = file:write_file(KeyringPath, <<"initial">>).
 
 config(Key, Config) ->
     config(Key, Config, undefined).
