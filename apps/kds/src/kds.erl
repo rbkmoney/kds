@@ -55,10 +55,9 @@ init([]) ->
         start => {kds_keyring_sup, start_link, []},
         type => supervisor
     },
-    KeyringStorage = genlib_app:env(?MODULE, keyring_storage, kds_keyring_storage_file),
-    KeyringStorageSpec = KeyringStorage:child_spec(?MODULE),
+    KeyringStorage = kds_keyring_storage:child_spec(?MODULE),
     Procs = [
-        KeyringStorageSpec,
+        KeyringStorage,
         KeyringSupervisor,
         Service
     ],

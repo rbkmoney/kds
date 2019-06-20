@@ -6,10 +6,15 @@
 -callback update(binary()) -> ok.
 -callback delete() -> ok.
 
+-export([child_spec/1]).
 -export([create/1]).
 -export([read/0]).
 -export([update/1]).
 -export([delete/0]).
+
+-spec child_spec(module()) -> supervisor:child_spec().
+child_spec(Module) ->
+    kds_backend:call(keyring_storage, child_spec, [Module]).
 
 -spec create(binary()) -> ok.
 create(Keyring) ->
