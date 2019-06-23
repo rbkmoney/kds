@@ -1,13 +1,18 @@
 -module(kds_keyring_meta).
 
+-include_lib("cds_proto/include/cds_proto_keyring_thrift.hrl").
+
 %% API
 -export([get_keyring_meta_from_keyring_data/1]).
 -export([get_changes/2]).
 -export([update_meta/2]).
 -export([update_add_meta/2]).
 -export([validate_meta/1]).
+-export([decode_keyring_meta/1]).
+-export([encode_keyring_meta/1]).
 
 -type keyring_meta() :: kds_keyring:keyring_meta(kds_keyring:key_id()).
+-type encoded_keyring_meta() :: #'KeyringMeta'{}.
 
 -spec get_keyring_meta_from_keyring_data(kds_keyring:keyring_data()) -> keyring_meta().
 get_keyring_meta_from_keyring_data(KeyringData) ->
@@ -73,3 +78,30 @@ validate_meta(#{keys := KeysMeta}) ->
         maps:values(KeysMeta));
 validate_meta(_InvalidMeta) ->
     false.
+
+-spec decode_keyring_meta(encoded_keyring_meta()) -> keyring_meta().
+decode_keyring_meta(#'KeyringMeta'{
+    keys_meta = KeysMeta
+}) ->
+    DecodedKeysMeta = maps:fold(
+        fun (K, #'KeyMeta'{retired = Retired}, Acc) ->
+            Acc#{K => #{retired => Retired}}
+        end,
+        #{},
+        KeysMeta),
+    #{keys => DecodedKeysMeta}.
+
+-spec encode_keyring_meta(keyring_meta() | undefined) -> encoded_keyring_meta().
+encode_keyring_meta(undefined) ->
+    #'KeyringMeta'{keys_meta = #{}};
+encode_keyring_meta(#{
+    keys := KeysMeta
+}) ->
+    EncodedKeysMeta = maps:fold(
+        fun (K, #{retired := Retired}, Acc) ->
+            Acc#{K => #'KeyMeta'{retired = Retired}}
+        end,
+        #{},
+        KeysMeta
+    ),
+    #'KeyringMeta'{keys_meta = EncodedKeysMeta}.

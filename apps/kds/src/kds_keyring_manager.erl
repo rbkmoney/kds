@@ -141,7 +141,7 @@ get_status() ->
 update_meta(KeyringMeta) ->
     call({update_meta, KeyringMeta}).
 
--spec get_meta() ->kds_keyring:keyring_meta(kds_keyring:key_id()).
+-spec get_meta() -> kds_keyring:keyring_meta(kds_keyring:key_id()).
 get_meta() ->
     call(get_meta).
 
@@ -279,11 +279,10 @@ handle_event({call, From}, {update_meta, UpdateKeyringMeta}, _State,
     EncryptedKeyring = kds_keyring_storage:read(),
     ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
     {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}};
-handle_event({call, From}, get_meta, _State, #{meta := KeyringMeta}) ->
+handle_event({call, From}, get_meta, _State, #data{keyring = #{meta := KeyringMeta}}) ->
     {keep_state_and_data, {reply, From, {ok, KeyringMeta}}};
 handle_event({call, From}, _Event, State, _StateData) ->
     {keep_state_and_data, {reply, From, {error, {invalid_status, State}}}}.
-
 
 -spec generate_status(atom()) -> status().
 generate_status(StateName) ->

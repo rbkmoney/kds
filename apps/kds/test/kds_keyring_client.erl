@@ -18,6 +18,8 @@
 -export([validate_rekey/3]).
 -export([cancel_rekey/1]).
 -export([get_state/1]).
+-export([update_keyring_meta/2]).
+-export([get_keyring_meta/1]).
 
 %%
 %% Internal types
@@ -269,6 +271,20 @@ cancel_rekey(RootUrl) ->
 get_state(RootUrl) ->
     State = kds_woody_client:call(keyring_v2, 'GetState', [], RootUrl),
     decode_state(State).
+
+-spec update_keyring_meta(kds_keyring:keyring_meta(), woody:url()) ->
+    ok | {error, {invalid_keyring_meta, binary()}}.
+update_keyring_meta(KeyringMeta, RootUrl) ->
+    try kds_woody_client:call(keyring_v2, 'UpdateKeyringMeta',
+        [kds_keyring_meta:encode_keyring_meta(KeyringMeta)], RootUrl) catch
+        #'InvalidKeyringMeta'{reason = Reason} ->
+            {error, {invalid_keyring_meta, Reason}}
+    end.
+
+-spec get_keyring_meta(woody:url()) -> kds_keyring:keyring_meta().
+get_keyring_meta(RootUrl) ->
+    KeyringMeta = kds_woody_client:call(keyring_v2, 'GetKeyringMeta', [], RootUrl),
+    kds_keyring_meta:decode_keyring_meta(KeyringMeta).
 
 decode_state(#'KeyringState'{
     status = Status,
