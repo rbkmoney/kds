@@ -9,9 +9,10 @@
 -export([init_per_group/2]).
 -export([end_per_group/2]).
 
--export([init_get_meta/1]).
+-export([init_check_meta/1]).
 -export([rotate_check_meta/1]).
 -export([update_meta/1]).
+-export([rotate_collision_check/1]).
 
 -type config() :: term().
 
@@ -29,9 +30,10 @@ all() ->
 groups() ->
     [
         {basic_lifecycle, [sequence], [
-            init_get_meta,
+            init_check_meta,
             rotate_check_meta,
-            update_meta
+            update_meta,
+            rotate_collision_check
         ]}
     ].
 %%
@@ -61,9 +63,9 @@ init_per_group(_, C) ->
 end_per_group(_, C) ->
     kds_ct_utils:stop_clear(C).
 
--spec init_get_meta(config()) -> _.
+-spec init_check_meta(config()) -> _.
 
-init_get_meta(C) ->
+init_check_meta(C) ->
     _ = ?assertEqual(
         #{keys => #{}},
         kds_keyring_client:get_keyring_meta(root_url(C))
@@ -107,6 +109,32 @@ update_meta(C) ->
         #{keys => #{
             0 => #{retired => true},
             1 => #{retired => false}
+        }},
+        kds_keyring_client:get_keyring_meta(root_url(C))
+    ).
+
+-spec rotate_collision_check(config()) -> _.
+
+rotate_collision_check(C) ->
+    [{Id1, MasterKey1}, {Id2, MasterKey2}, _MasterKey3] = kds_ct_utils:lookup(master_keys, C),
+    ok = kds_keyring_client:start_rotate(root_url(C)),
+    {more_keys_needed, 1} = kds_keyring_client:confirm_rotate(Id1, MasterKey1, root_url(C)),
+    _ = ?assertEqual(
+        #{keys => #{
+            0 => #{retired => true},
+            1 => #{retired => false}
+        }},
+        kds_keyring_client:get_keyring_meta(root_url(C))
+    ),
+    ok = kds_keyring_client:update_keyring_meta(
+        #{keys => #{0 => #{retired => false}}},
+        root_url(C)),
+    ok = kds_keyring_client:confirm_rotate(Id2, MasterKey2, root_url(C)),
+    _ = ?assertEqual(
+        #{keys => #{
+            0 => #{retired => false},
+            1 => #{retired => false},
+            2 => #{retired => false}
         }},
         kds_keyring_client:get_keyring_meta(root_url(C))
     ).
