@@ -26,15 +26,18 @@
 -spec start_clear(config()) -> config().
 start_clear(Config) ->
     IP = "127.0.0.1",
-    Port = 8022,
-    RootUrl = "http://" ++ IP ++ ":" ++ integer_to_list(Port),
+    ManagementPort = 8022,
+    StoragePort = 8023,
+    ManagementRootUrl = "http://" ++ IP ++ ":" ++ integer_to_list(ManagementPort),
+    StorageRootUrl = "http://" ++ IP ++ ":" ++ integer_to_list(StoragePort),
     Apps =
         genlib_app:start_application_with(scoper, [
             {storage, scoper_storage_logger}
         ]) ++
         genlib_app:start_application_with(kds, [
             {ip, IP},
-            {port, Port},
+            {management_port, ManagementPort},
+            {storage_port, StoragePort},
             {keyring_storage, kds_keyring_storage_file},
             {keyring_storage_opts, #{
                 keyring_path => filename:join(config(priv_dir, Config), "keyring")
@@ -107,7 +110,8 @@ start_clear(Config) ->
         ]),
     [
         {apps, lists:reverse(Apps)},
-        {root_url, genlib:to_binary(RootUrl)}
+        {management_root_url, genlib:to_binary(ManagementRootUrl)},
+        {storage_root_url, genlib:to_binary(StorageRootUrl)}
     ] ++ Config.
 
 -spec stop_clear(config()) -> ok.
