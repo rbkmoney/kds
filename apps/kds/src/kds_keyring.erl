@@ -8,7 +8,6 @@
 
 -export([get_changes/2]).
 -export([apply_changes/2]).
--export([decode_encrypted_keyring/1]).
 
 -export([encrypt/2]).
 -export([decrypt/2]).
@@ -145,16 +144,6 @@ apply_changes(#{data := OldData, meta := OldMeta}, DiffKeyring) ->
 
 %%
 
--spec decode_encrypted_keyring(#{data := binary(), meta := keyring_meta(binary())}) -> encrypted_keyring().
-decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
-    Keyring#{
-        meta => #{
-            keys => decode_number_key_map(KeysMeta)
-        }
-    };
-decode_encrypted_keyring(#{meta := <<"undefined">>} = Keyring)->
-    Keyring#{meta => undefined}.
-
 -spec encrypt(key(), keyring()) -> encrypted_keyring().
 encrypt(MasterKey, #{data := KeyringData, meta := KeyringMeta}) ->
     #{
@@ -219,6 +208,3 @@ validate_masterkey(MasterKey, EncryptedOldKeyring) ->
         {error, decryption_failed} ->
             {error, wrong_masterkey}
     end.
-
-decode_number_key_map(Map) ->
-    maps:fold(fun (K, V, Acc) -> Acc#{binary_to_integer(K) => V} end, #{}, Map).

@@ -65,7 +65,7 @@ handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
         {ok, Data} ->
             case jsx:is_json(Data) of
                 true ->
-                    DecodedData = kds_keyring:decode_encrypted_keyring(
+                    DecodedData = decode_encrypted_keyring(
                         jsx:decode(Data, [return_maps, {labels, attempt_atom}])),
                     {ok, #{data => maps:get(data, DecodedData), meta => maps:get(meta, DecodedData)}};
                 false ->
@@ -99,3 +99,16 @@ atomic_write(Path, Keyring) ->
 
 tmp_keyring_path(Path) ->
     genlib:to_list(Path) ++ ".tmp".
+
+-spec decode_encrypted_keyring(#{data := binary(), meta := keyring_meta(binary())}) -> encrypted_keyring().
+decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
+    Keyring#{
+        meta => #{
+            keys => decode_number_key_map(KeysMeta)
+        }
+    };
+decode_encrypted_keyring(#{meta := <<"undefined">>} = Keyring)->
+    Keyring#{meta => undefined}.
+
+decode_number_key_map(Map) ->
+    maps:fold(fun (K, V, Acc) -> Acc#{binary_to_integer(K) => V} end, #{}, Map).
