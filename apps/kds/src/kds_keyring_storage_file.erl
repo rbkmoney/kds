@@ -100,7 +100,8 @@ atomic_write(Path, Keyring) ->
 tmp_keyring_path(Path) ->
     genlib:to_list(Path) ++ ".tmp".
 
--spec decode_encrypted_keyring(#{data := binary(), meta := keyring_meta(binary())}) -> encrypted_keyring().
+-spec decode_encrypted_keyring(#{data := binary(), meta := kds_keyring:keyring_meta(binary())}) ->
+    kds_keyring:encrypted_keyring().
 decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
     Keyring#{
         meta => #{
