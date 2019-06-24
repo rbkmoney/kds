@@ -70,6 +70,13 @@ init_check_meta(C) ->
         #{keys => #{}},
         kds_keyring_client:get_keyring_meta(root_url(C))
     ),
+    ok = kds_keyring_client:update_keyring_meta(
+        #{keys => #{0 => #{retired => true}}},
+        root_url(C)),
+    _ = ?assertEqual(
+        #{keys => #{}},
+        kds_keyring_client:get_keyring_meta(root_url(C))
+    ),
     _ = kds_ct_keyring:init(C),
     _ = ?assertEqual(
         #{keys => #{0 => #{retired => false}}},

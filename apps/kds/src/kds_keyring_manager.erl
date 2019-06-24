@@ -276,8 +276,12 @@ handle_event({call, From}, get_status, State, _Data) ->
 handle_event({call, From}, {update_meta, UpdateKeyringMeta}, _State,
     #data{keyring = #{meta := KeyringMeta} = Keyring} = Data) ->
     NewKeyringMeta = kds_keyring_meta:update_meta(KeyringMeta, UpdateKeyringMeta),
-    EncryptedKeyring = kds_keyring_storage:read(),
-    ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
+    ok = try kds_keyring_storage:read() of
+        EncryptedKeyring ->
+            kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta})
+    catch not_found ->
+        ok
+    end,
     {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}};
 handle_event({call, From}, get_meta, _State, #data{keyring = #{meta := KeyringMeta}}) ->
     {keep_state_and_data, {reply, From, {ok, KeyringMeta}}};
