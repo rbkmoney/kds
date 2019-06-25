@@ -3,7 +3,7 @@
 -include_lib("cds_proto/include/cds_proto_keyring_thrift.hrl").
 
 %% API
--export([get_keyring_meta_from_keyring_data/1]).
+-export([get_default_keyring_meta/1]).
 -export([get_changes/2]).
 -export([update_meta/2]).
 -export([update_add_meta/2]).
@@ -14,8 +14,8 @@
 -type keyring_meta() :: kds_keyring:keyring_meta(kds_keyring:key_id()).
 -type encoded_keyring_meta() :: #'KeyringMeta'{}.
 
--spec get_keyring_meta_from_keyring_data(kds_keyring:keyring_data()) -> keyring_meta().
-get_keyring_meta_from_keyring_data(KeyringData) ->
+-spec get_default_keyring_meta(kds_keyring:keyring_data()) -> keyring_meta().
+get_default_keyring_meta(KeyringData) ->
     Keys = maps:get(keys, KeyringData),
     KeysMeta = maps:map(fun (_KeyId, _Key) -> #{retired => false} end, Keys),
     #{keys => KeysMeta}.

@@ -217,8 +217,8 @@ handle_event({call, From}, cancel_unlock, locked, _StateData) ->
 
 %% unlocked events
 
-handle_event({call, From}, lock, unlocked, #data{keyring = #{meta := KeyringMeta}} = StateData) ->
-    {next_state, locked, StateData#data{keyring = #{data => undefined, meta => KeyringMeta}}, {reply, From, ok}};
+handle_event({call, From}, lock, unlocked, #data{keyring = Keyring} = StateData) ->
+    {next_state, locked, StateData#data{keyring = Keyring#{data => undefined}}, {reply, From, ok}};
 handle_event({call, From}, get_keyring, unlocked, #data{keyring = Keyring}) ->
     {keep_state_and_data, {reply, From, {ok, Keyring}}};
 handle_event({call, From}, start_rotate, unlocked, #data{keyring = OldKeyring}) ->

@@ -159,7 +159,7 @@ decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta}) ->
                 undefined ->
                     {ok, #{
                         data => KeyringData,
-                        meta => kds_keyring_meta:get_keyring_meta_from_keyring_data(KeyringData)
+                        meta => kds_keyring_meta:get_default_keyring_meta(KeyringData)
                     }};
                 _ ->
                     {ok, #{data => KeyringData, meta => KeyringMeta}}
