@@ -32,6 +32,7 @@ groups() ->
             locked_unlocked_check_keyring
         ]}
     ].
+
 %%
 %% starting/stopping
 %%
