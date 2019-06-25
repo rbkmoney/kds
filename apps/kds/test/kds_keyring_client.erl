@@ -20,7 +20,7 @@
 -export([get_state/1]).
 -export([update_keyring_meta/2]).
 -export([get_keyring_meta/1]).
--export([get_keyring/1]).
+-export([get_keyring/2]).
 
 %%
 %% Internal types
@@ -287,9 +287,18 @@ get_keyring_meta(RootUrl) ->
     KeyringMeta = kds_woody_client:call(keyring_management, 'GetKeyringMeta', [], RootUrl),
     kds_keyring_meta:decode_keyring_meta(KeyringMeta).
 
--spec get_keyring(woody:url()) -> kds_keyring:keyring().
-get_keyring(RootUrl) ->
-    try kds_woody_client:call(keyring_storage, 'GetKeyring', [], RootUrl) of
+-spec get_keyring(woody:url(), term()) -> kds_keyring:keyring().
+get_keyring(RootUrl, SSLOptions) ->
+    ExtraOpts = #{
+        transport_opts => #{
+            ssl_options => [
+                {server_name_indication, "Test Server"},
+                {verify, verify_peer} |
+                SSLOptions
+            ]
+        }
+    },
+    try kds_woody_client:call(keyring_storage, 'GetKeyring', [], RootUrl, ExtraOpts) of
         Keyring ->
             decode_keyring(Keyring)
     catch

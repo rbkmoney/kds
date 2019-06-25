@@ -62,9 +62,10 @@ end_per_group(_, C) ->
 -spec init_check_keyring(config()) -> _.
 
 init_check_keyring(C) ->
+    SSLOpts = [{cacertfile, cacertfile(C)}, {certfile, clientcertfile(C)}],
     _ = ?assertEqual(
         {error, {invalid_status, not_initialized}},
-        kds_keyring_client:get_keyring(root_url(C))
+        kds_keyring_client:get_keyring(root_url(C), SSLOpts)
     ),
     _ = kds_ct_keyring:init(C),
     _ = ?assertMatch(
@@ -72,23 +73,24 @@ init_check_keyring(C) ->
             meta := #{keys := #{0 := #{retired := false}}},
             data := #{current_key := 0, keys := #{0 := _Key0}}
         },
-        kds_keyring_client:get_keyring(root_url(C))
+        kds_keyring_client:get_keyring(root_url(C), SSLOpts)
     ).
 
 -spec locked_unlocked_check_keyring(config()) -> _.
 
 locked_unlocked_check_keyring(C) ->
+    SSLOpts = [{cacertfile, cacertfile(C)}, {certfile, clientcertfile(C)}],
     _ = ?assertMatch(
         #{
             meta := #{keys := #{0 := #{retired := false}}},
             data := #{current_key := 0, keys := #{0 := _Key0}}
         },
-        kds_keyring_client:get_keyring(root_url(C))
+        kds_keyring_client:get_keyring(root_url(C), SSLOpts)
     ),
     _ = kds_ct_keyring:lock(C),
     _ = ?assertEqual(
         {error, {invalid_status, locked}},
-        kds_keyring_client:get_keyring(root_url(C))
+        kds_keyring_client:get_keyring(root_url(C), SSLOpts)
     ),
     _ = kds_ct_keyring:unlock(C),
     _ = ?assertMatch(
@@ -96,7 +98,7 @@ locked_unlocked_check_keyring(C) ->
             meta := #{keys := #{0 := #{retired := false}}},
             data := #{current_key := 0, keys := #{0 := _Key0}}
         },
-        kds_keyring_client:get_keyring(root_url(C))
+        kds_keyring_client:get_keyring(root_url(C), SSLOpts)
     ).
 
 %%
@@ -116,3 +118,9 @@ config(Key, Config, Default) ->
 
 root_url(C) ->
     config(storage_root_url, C).
+
+cacertfile(C) ->
+    config(cacertfile, C).
+
+clientcertfile(C) ->
+    config(clientcertfile, C).
