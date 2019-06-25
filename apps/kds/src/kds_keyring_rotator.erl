@@ -45,7 +45,7 @@
 -type invalid_activity() :: {error, {invalid_activity, {rotation, state()}}}.
 -type rotate_resp() ::
     {ok, {done, {encrypted_keyring(), keyring()}}} |
-    {ok, {more, non_neg_integer()}}|
+    {ok, {more, pos_integer()}}|
     {error, {operation_aborted, rotate_errors()}}.
 
 -spec callback_mode() -> handle_event_function.

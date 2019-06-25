@@ -69,7 +69,7 @@ initialize(Threshold) ->
     call({initialize, Threshold}).
 
 -spec validate(shareholder_id(), masterkey_share()) ->
-    {ok, {more, integer()}} |
+    {ok, {more, pos_integer()}} |
     {ok, {done, {encrypted_keyring(), decrypted_keyring()}}} |
     {error, validate_errors()} | invalid_activity().
 

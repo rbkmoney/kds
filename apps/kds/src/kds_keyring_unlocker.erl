@@ -44,7 +44,7 @@
 -type invalid_activity() :: {error, {invalid_activity, {unlock, state()}}}.
 -type unlock_resp() ::
     {ok, {done, keyring_diff()}} |
-    {ok, {more, non_neg_integer()}} |
+    {ok, {more, pos_integer()}} |
     {error, {operation_aborted, unlock_errors()}}.
 
 -spec callback_mode() -> handle_event_function.

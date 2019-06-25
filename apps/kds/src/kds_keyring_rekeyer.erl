@@ -74,7 +74,7 @@ initialize(Threshold, EncryptedKeyring) ->
     call({initialize, Threshold, EncryptedKeyring}).
 
 -spec confirm(shareholder_id(), masterkey_share()) ->
-    {ok, {more, integer()}} | ok | {error, confirm_errors() | invalid_activity_errors()}.
+    {ok, {more, pos_integer()}} | ok | {error, confirm_errors() | invalid_activity_errors()}.
 
 confirm(ShareholderId, Share) ->
     call({confirm, ShareholderId, Share}).
@@ -85,7 +85,7 @@ start_validation() ->
     call(start_validatation).
 
 -spec validate(shareholder_id(), masterkey_share()) ->
-    {ok, {more, integer()}} |
+    {ok, {more, pos_integer()}} |
     {ok, {done, encrypted_keyring_diff()}} |
     {error, validate_errors() | invalid_activity_errors()}.
 

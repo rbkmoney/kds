@@ -73,7 +73,7 @@ start_unlock() ->
     call(start_unlock).
 
 -spec confirm_unlock(kds_shareholder:shareholder_id(), kds_keysharing:masterkey_share()) ->
-    {more, non_neg_integer()} | ok.
+    {more, pos_integer()} | ok.
 confirm_unlock(ShareholderId, Share) ->
     call({confirm_unlock, ShareholderId, Share}).
 
@@ -90,7 +90,7 @@ start_rotate() ->
     call(start_rotate).
 
 -spec confirm_rotate(kds_shareholder:shareholder_id(), kds_keysharing:masterkey_share()) ->
-    {more, non_neg_integer()} | ok.
+    {more, pos_integer()} | ok.
 confirm_rotate(ShareholderId, Share) ->
     call({confirm_rotate, ShareholderId, Share}).
 
@@ -103,7 +103,7 @@ initialize(Threshold) ->
     call({initialize, Threshold}).
 
 -spec validate_init(kds_shareholder:shareholder_id(), kds_keysharing:masterkey_share()) ->
-    {more, non_neg_integer()} | ok.
+    {more, pos_integer()} | ok.
 validate_init(ShareholderId, Share) ->
     call({validate_init, ShareholderId, Share}).
 
@@ -116,7 +116,7 @@ start_rekey(Threshold) ->
     call({start_rekey, Threshold}).
 
 -spec confirm_rekey(kds_shareholder:shareholder_id(), kds_keysharing:masterkey_share()) ->
-    {more, non_neg_integer()} | ok.
+    {more, pos_integer()} | ok.
 confirm_rekey(ShareholderId, Share) ->
     call({confirm_rekey, ShareholderId, Share}).
 
@@ -125,7 +125,7 @@ start_validate_rekey() ->
     call(start_validate_rekey).
 
 -spec validate_rekey(kds_shareholder:shareholder_id(), kds_keysharing:masterkey_share()) ->
-    {more, non_neg_integer()} | ok.
+    {more, pos_integer()} | ok.
 validate_rekey(ShareholderId, Share) ->
     call({validate_rekey, ShareholderId, Share}).
 
