@@ -20,6 +20,7 @@
 -export([get_state/1]).
 -export([update_keyring_meta/2]).
 -export([get_keyring_meta/1]).
+-export([get_keyring/2]).
 
 %%
 %% Internal types
@@ -37,7 +38,7 @@
     {error, {invalid_activity, {initialization, kds_keyring_initializer:state()}}} |
     {error, {invalid_arguments, binary()}}.
 start_init(Threshold, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'StartInit', [Threshold], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'StartInit', [Threshold], RootUrl) of
         EncryptedShares ->
             decode_encrypted_shares(EncryptedShares)
     catch
@@ -56,7 +57,7 @@ start_init(Threshold, RootUrl) ->
     {error, verification_failed} |
     {error, {invalid_arguments, binary()}}.
 validate_init(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'ValidateInit', [ShareholderId, Share], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'ValidateInit', [ShareholderId, Share], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -77,7 +78,7 @@ validate_init(ShareholderId, Share, RootUrl) ->
     {error, {invalid_status, kds_keyring_manager:state()}} |
     {error, {invalid_activity, {initialization, kds_keyring_initializer:state()}}}.
 cancel_init(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'CancelInit', [], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'CancelInit', [], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}};
         #'InvalidActivity'{activity = Activity} ->
@@ -89,7 +90,7 @@ cancel_init(RootUrl) ->
     {error, {invalid_status, kds_keyring_manager:state()}} |
     {error, {invalid_activity, {unlock, kds_keyring_unlocker:state()}}}.
 start_unlock(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'StartUnlock', [], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'StartUnlock', [], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}};
         #'InvalidActivity'{activity = Activity} ->
@@ -103,7 +104,7 @@ start_unlock(RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 confirm_unlock(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'ConfirmUnlock', [ShareholderId, Share], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'ConfirmUnlock', [ShareholderId, Share], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -123,7 +124,7 @@ confirm_unlock(ShareholderId, Share, RootUrl) ->
     ok |
     {error, {invalid_status, kds_keyring_manager:state()}}.
 cancel_unlock(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'CancelUnlock', [], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'CancelUnlock', [], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}}
     end.
@@ -132,7 +133,7 @@ cancel_unlock(RootUrl) ->
     ok |
     {error, {invalid_status, kds_keyring_manager:state()}}.
 lock(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'Lock', [], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'Lock', [], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}}
     end.
@@ -142,7 +143,7 @@ lock(RootUrl) ->
     {error, {invalid_status, kds_keyring_manager:state()}} |
     {error, {invalid_activity, {rotation, kds_keyring_rotator:state()}}}.
 start_rotate(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'StartRotate', [], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'StartRotate', [], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}};
         #'InvalidActivity'{activity = Activity} ->
@@ -156,7 +157,7 @@ start_rotate(RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 confirm_rotate(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'ConfirmRotate', [ShareholderId, Share], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'ConfirmRotate', [ShareholderId, Share], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -176,7 +177,7 @@ confirm_rotate(ShareholderId, Share, RootUrl) ->
     ok |
     {error, {invalid_status, kds_keyring_manager:state()}}.
 cancel_rotate(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'CancelRotate', [], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'CancelRotate', [], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}}
     end.
@@ -187,7 +188,7 @@ cancel_rotate(RootUrl) ->
     {error, {invalid_activity, {rekeying, kds_keyring_rotator:state()}}} |
     {error, {invalid_arguments, binary()}}.
 start_rekey(Threshold, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'StartRekey', [Threshold], RootUrl) catch
+    try kds_woody_client:call(keyring_management, 'StartRekey', [Threshold], RootUrl) catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}};
         #'InvalidActivity'{activity = Activity} ->
@@ -203,7 +204,7 @@ start_rekey(Threshold, RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 confirm_rekey(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'ConfirmRekey', [ShareholderId, Share], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'ConfirmRekey', [ShareholderId, Share], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -224,7 +225,7 @@ confirm_rekey(ShareholderId, Share, RootUrl) ->
     {error, {invalid_status, kds_keyring_manager:state()}} |
     {error, {invalid_activity, {rekeying, kds_keyring_rotator:state()}}}.
 start_rekey_validation(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'StartRekeyValidation', [], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'StartRekeyValidation', [], RootUrl) of
         EncryptedShares ->
             decode_encrypted_shares(EncryptedShares)
     catch
@@ -241,7 +242,7 @@ start_rekey_validation(RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 validate_rekey(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'ValidateRekey', [ShareholderId, Share], RootUrl) of
+    try kds_woody_client:call(keyring_management, 'ValidateRekey', [ShareholderId, Share], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -261,7 +262,7 @@ validate_rekey(ShareholderId, Share, RootUrl) ->
     ok |
     {error, {invalid_status, kds_keyring_manager:state()}}.
 cancel_rekey(RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'CancelRekey', [], RootUrl)
+    try kds_woody_client:call(keyring_management, 'CancelRekey', [], RootUrl)
     catch
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}}
@@ -269,13 +270,13 @@ cancel_rekey(RootUrl) ->
 
 -spec get_state(woody:url()) -> kds_keyring_manager:status().
 get_state(RootUrl) ->
-    State = kds_woody_client:call(keyring_v2, 'GetState', [], RootUrl),
+    State = kds_woody_client:call(keyring_management, 'GetState', [], RootUrl),
     decode_state(State).
 
 -spec update_keyring_meta(kds_keyring:keyring_meta(), woody:url()) ->
     ok | {error, {invalid_keyring_meta, binary()}}.
 update_keyring_meta(KeyringMeta, RootUrl) ->
-    try kds_woody_client:call(keyring_v2, 'UpdateKeyringMeta',
+    try kds_woody_client:call(keyring_management, 'UpdateKeyringMeta',
         [kds_keyring_meta:encode_keyring_meta(KeyringMeta)], RootUrl) catch
         #'InvalidKeyringMeta'{reason = Reason} ->
             {error, {invalid_keyring_meta, Reason}}
@@ -283,8 +284,27 @@ update_keyring_meta(KeyringMeta, RootUrl) ->
 
 -spec get_keyring_meta(woody:url()) -> kds_keyring:keyring_meta().
 get_keyring_meta(RootUrl) ->
-    KeyringMeta = kds_woody_client:call(keyring_v2, 'GetKeyringMeta', [], RootUrl),
+    KeyringMeta = kds_woody_client:call(keyring_management, 'GetKeyringMeta', [], RootUrl),
     kds_keyring_meta:decode_keyring_meta(KeyringMeta).
+
+-spec get_keyring(woody:url(), term()) -> kds_keyring:keyring().
+get_keyring(RootUrl, SSLOptions) ->
+    ExtraOpts = #{
+        transport_opts => #{
+            ssl_options => [
+                {server_name_indication, "Test Server"},
+                {verify, verify_peer} |
+                SSLOptions
+            ]
+        }
+    },
+    try kds_woody_client:call(keyring_storage, 'GetKeyring', [], RootUrl, ExtraOpts) of
+        Keyring ->
+            decode_keyring(Keyring)
+    catch
+        #'InvalidStatus'{status = Status} ->
+            {error, {invalid_status, Status}}
+    end.
 
 decode_state(#'KeyringState'{
     status = Status,
@@ -358,3 +378,35 @@ decode_encrypted_share(#'EncryptedMasterKeyShare' {
         owner => Owner,
         encrypted_share => EncryptedShare
     }.
+
+decode_keyring(#'Keyring'{
+    current_key_id = CurrentKeyId,
+    keys = Keys
+}) ->
+    #{
+        data => #{
+            current_key => CurrentKeyId,
+            keys => decode_keys(Keys)
+        },
+        meta => #{
+            keys => decode_keys_meta(Keys)
+        }
+    }.
+
+decode_keys(Keys) ->
+    maps:fold(
+        fun (K, #'Key'{data = KeyData}, Acc) ->
+            Acc#{K => KeyData}
+        end,
+        #{},
+        Keys
+    ).
+
+decode_keys_meta(Keys) ->
+    maps:fold(
+        fun (K, #'Key'{meta = #'KeyMeta'{retired = Retired}}, Acc) ->
+            Acc#{K => #{retired => Retired}}
+        end,
+        #{},
+        Keys
+    ).

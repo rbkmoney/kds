@@ -1,4 +1,4 @@
--module(kds_keyring_v2_thrift_handler).
+-module(kds_keyring_management_thrift_handler).
 -behaviour(woody_server_thrift_handler).
 
 -include_lib("cds_proto/include/cds_proto_keyring_thrift.hrl").
@@ -17,7 +17,7 @@
 
 handle_function(OperationID, Args, Context, Opts) ->
     scoper:scope(
-        keyring_v2,
+        keyring_management,
         fun() -> handle_function_(OperationID, Args, Context, Opts) end
     ).
 
