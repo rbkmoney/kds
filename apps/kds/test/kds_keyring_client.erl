@@ -405,4 +405,6 @@ decode_keys_meta(Keys) ->
         fun (K, #'Key'{meta = #'KeyMeta'{retired = Retired}}, Acc) ->
             Acc#{K => #{retired => Retired}}
         end,
-        #{}, Keys).
+        #{},
+        Keys
+    ).
