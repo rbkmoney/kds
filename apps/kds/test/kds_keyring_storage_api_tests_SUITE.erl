@@ -12,7 +12,7 @@
 -export([init_check_keyring/1]).
 -export([locked_unlocked_check_keyring/1]).
 
--type config() :: term().
+-type config() :: [{tuple()}].
 
 -spec test() -> _.
 
@@ -32,6 +32,7 @@ groups() ->
             locked_unlocked_check_keyring
         ]}
     ].
+
 %%
 %% starting/stopping
 %%

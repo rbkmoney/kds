@@ -398,11 +398,15 @@ decode_keys(Keys) ->
         fun (K, #'Key'{data = KeyData}, Acc) ->
             Acc#{K => KeyData}
         end,
-        #{}, Keys).
+        #{},
+        Keys
+    ).
 
 decode_keys_meta(Keys) ->
     maps:fold(
         fun (K, #'Key'{meta = #'KeyMeta'{retired = Retired}}, Acc) ->
             Acc#{K => #{retired => Retired}}
         end,
-        #{}, Keys).
+        #{},
+        Keys
+    ).
