@@ -64,19 +64,14 @@ update_add_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
 
 -spec validate_meta(keyring_meta()) -> boolean().
 validate_meta(#{keys := KeysMeta}) ->
-    lists:all(
-        fun (KeyMeta) ->
-            case KeyMeta of
-                #{
-                    retired := Retired
-                } when is_boolean(Retired) ->
-                    true;
-                _InvalidKeyMeta ->
-                    false
-            end
-        end,
-        maps:values(KeysMeta));
-validate_meta(_InvalidMeta) ->
+    lists:all(fun validate_key_meta/1, maps:values(KeysMeta)).
+
+validate_key_meta(KeyMeta) ->
+    validate_retired(KeyMeta).
+
+validate_retired(#{retired := Retired}) when is_boolean(Retired) ->
+    true;
+validate_retired(#{retired := _Retired}) ->
     false.
 
 -spec decode_keyring_meta(encoded_keyring_meta()) -> keyring_meta().
