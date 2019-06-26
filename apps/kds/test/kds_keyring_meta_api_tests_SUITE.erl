@@ -71,9 +71,12 @@ init_check_meta(C) ->
         #{keys => #{}},
         kds_keyring_client:get_keyring_meta(root_url(C))
     ),
-    ok = kds_keyring_client:update_keyring_meta(
-        #{keys => #{0 => #{retired => true}}},
-        root_url(C)),
+    _ = ?assertMatch(
+        {error, {invalid_keyring_meta, <<"No changes can be made with provided meta">>}},
+        kds_keyring_client:update_keyring_meta(
+            #{keys => #{0 => #{retired => true}}},
+            root_url(C))
+    ),
     _ = ?assertEqual(
         #{keys => #{}},
         kds_keyring_client:get_keyring_meta(root_url(C))

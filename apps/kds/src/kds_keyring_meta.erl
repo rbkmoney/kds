@@ -8,6 +8,7 @@
 -export([update_meta/2]).
 -export([update_add_meta/2]).
 -export([validate_meta/1]).
+-export([changes_will_be_made/2]).
 -export([decode_keyring_meta/1]).
 -export([encode_keyring_meta/1]).
 
@@ -62,17 +63,27 @@ update_add_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
         OldKeysMeta, UpdateKeysMeta),
     OldMeta#{keys => NewKeysMeta}.
 
--spec validate_meta(keyring_meta()) -> boolean().
+-spec validate_meta(keyring_meta()) -> ok.
 validate_meta(#{keys := KeysMeta}) ->
-    lists:all(fun validate_key_meta/1, maps:values(KeysMeta)).
+    lists:foreach(fun validate_key_meta/1, maps:values(KeysMeta)).
 
 validate_key_meta(KeyMeta) ->
-    validate_retired(KeyMeta).
+    ok = validate_retired(KeyMeta),
+    ok.
 
 validate_retired(#{retired := Retired}) when is_boolean(Retired) ->
-    true;
+    ok;
 validate_retired(#{retired := _Retired}) ->
-    false.
+    throw({validation_failed, <<"field \'retired\' isn't boolean">>}).
+
+-spec changes_will_be_made(keyring_meta(), keyring_meta()) -> ok.
+changes_will_be_made(OldKeyringMeta, UpdateMeta) ->
+    case update_meta(OldKeyringMeta, UpdateMeta) of
+        OldKeyringMeta ->
+            throw(no_changes);
+        _NewKeyringMeta ->
+            ok
+    end.
 
 -spec decode_keyring_meta(encoded_keyring_meta()) -> keyring_meta().
 decode_keyring_meta(#'KeyringMeta'{

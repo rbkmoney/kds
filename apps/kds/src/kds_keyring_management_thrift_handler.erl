@@ -178,13 +178,20 @@ handle_function_('GetState', [], _Context, _Opts) ->
     end;
 
 handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
-    DecodedKeyringMeta = kds_keyring_meta:decode_keyring_meta(KeyringMeta),
-    case kds_keyring_meta:validate_meta(DecodedKeyringMeta) of
-        true ->
-            kds_keyring_manager:update_meta(DecodedKeyringMeta),
-            {ok, ok};
-        false ->
-            raise(#'InvalidKeyringMeta'{})
+    try
+        DecodedKeyringMeta = kds_keyring_meta:decode_keyring_meta(KeyringMeta),
+        ok = kds_keyring_meta:validate_meta(DecodedKeyringMeta),
+        ok = kds_keyring_meta:changes_will_be_made(kds_keyring_manager:get_meta(), DecodedKeyringMeta),
+        kds_keyring_manager:update_meta(DecodedKeyringMeta)
+    of
+        ok ->
+            {ok, ok}
+    catch
+        {validation_failed, Reason} ->
+            FormattedReason = io_lib:format("validation_failed Reason: ~w", [Reason]),
+            raise(#'InvalidKeyringMeta'{reason = list_to_binary(FormattedReason)});
+        no_changes ->
+            raise(#'InvalidKeyringMeta'{reason = <<"No changes can be made with provided meta">>})
     end;
 handle_function_('GetKeyringMeta', [], _Context, _Opts) ->
     KeyringMeta = kds_keyring_manager:get_meta(),
