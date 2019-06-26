@@ -94,7 +94,7 @@ handle_cast(_Request, State) ->
 
 atomic_write(Path, Keyring) ->
     TmpPath = tmp_keyring_path(Path),
-    ok = file:write_file(TmpPath, Keyring),
+    ok = file:write_file(TmpPath, Keyring, [sync]),
     file:rename(TmpPath, Path).
 
 tmp_keyring_path(Path) ->

@@ -14,7 +14,7 @@
 -export([update_meta/1]).
 -export([rotate_collision_check/1]).
 
--type config() :: term().
+-type config() :: [tuple()].
 
 -spec test() -> _.
 
@@ -36,6 +36,7 @@ groups() ->
             rotate_collision_check
         ]}
     ].
+
 %%
 %% starting/stopping
 %%

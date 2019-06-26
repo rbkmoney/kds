@@ -42,7 +42,7 @@
 %% tests descriptions
 %%
 
--type config() :: term().
+-type config() :: [tuple()].
 
 -spec test() -> _.
 

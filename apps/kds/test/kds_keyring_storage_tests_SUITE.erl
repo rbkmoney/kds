@@ -15,7 +15,7 @@
 
 -export([create_old_format/1]).
 
--type config() :: term().
+-type config() :: [tuple()].
 
 -spec all() -> [{group, atom()}].
 
@@ -93,7 +93,7 @@ delete(_C) ->
 
 create_old_format(C) ->
     KeyringStorageOpts = application:get_env(kds, keyring_storage_opts, #{}),
-    KeyringPath = maps:get(keyring_path, KeyringStorageOpts,  filename:join(config(priv_dir, C), "keyring")),
+    KeyringPath = maps:get(keyring_path, KeyringStorageOpts, filename:join(config(priv_dir, C), "keyring")),
     ok = file:write_file(KeyringPath, <<"initial">>).
 
 config(Key, Config) ->
