@@ -74,7 +74,7 @@ validate_key_meta(KeyMeta) ->
 validate_retired(#{retired := Retired}) when is_boolean(Retired) ->
     ok;
 validate_retired(#{retired := _Retired}) ->
-    throw({validation_failed, <<"field \'retired\' isn't boolean">>}).
+    throw({validation_failed, <<"field 'retired' isn't boolean">>}).
 
 -spec changes_will_be_made(keyring_meta(), keyring_meta()) -> ok.
 changes_will_be_made(OldKeyringMeta, UpdateMeta) ->
