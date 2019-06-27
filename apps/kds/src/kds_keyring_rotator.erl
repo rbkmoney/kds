@@ -39,12 +39,14 @@
 -type masterkey_share() :: kds_keysharing:masterkey_share().
 -type masterkey_shares() :: kds_keysharing:masterkey_shares().
 -type keyring() :: kds_keyring:keyring().
+-type keyring_diff() :: kds_keyring:keyring_diff().
 -type encrypted_keyring() :: kds_keyring:encrypted_keyring().
+-type encrypted_keyring_diff() :: kds_keyring:encrypted_keyring_diff().
 -type rotate_errors() ::
     wrong_masterkey | failed_to_recover.
 -type invalid_activity() :: {error, {invalid_activity, {rotation, state()}}}.
 -type rotate_resp() ::
-    {ok, {done, {encrypted_keyring(), keyring()}}} |
+    {ok, {done, {encrypted_keyring_diff(), keyring_diff()}}} |
     {ok, {more, pos_integer()}}|
     {error, {operation_aborted, rotate_errors()}}.
 
@@ -160,7 +162,7 @@ get_lifetime(TimerRef) ->
     end.
 
 -spec update_keyring(keyring(), encrypted_keyring(), masterkey_shares()) ->
-    {ok, {done, {encrypted_keyring(), keyring()}}} | {error, {operation_aborted, rotate_errors()}}.
+    {ok, {done, {encrypted_keyring_diff(), keyring_diff()}}} | {error, {operation_aborted, rotate_errors()}}.
 
 update_keyring(OldKeyring, EncryptedOldKeyring, AllShares) ->
     case kds_keysharing:recover(AllShares) of

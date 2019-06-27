@@ -125,16 +125,16 @@ get_current_key(#{data := #{current_key := CurrentKeyId, keys := Keys}}) ->
     CurrentKey = maps:get(CurrentKeyId, Keys),
     {CurrentKeyId, CurrentKey}.
 
--spec get_changes(keyring() | encrypted_keyring(), keyring() | encrypted_keyring()) ->
-    keyring_diff() | encrypted_keyring_diff().
+-spec get_changes(keyring(), keyring()) -> keyring_diff();
+    (encrypted_keyring(), encrypted_keyring()) -> encrypted_keyring_diff().
 get_changes(#{meta := OldMeta}, #{data := NewData, meta := NewMeta}) ->
     #{
         data => NewData,
         meta => kds_keyring_meta:get_changes(OldMeta, NewMeta)
     }.
 
--spec apply_changes(keyring() | encrypted_keyring(), keyring_diff() | encrypted_keyring_diff()) ->
-    keyring() | encrypted_keyring().
+-spec apply_changes(keyring(), keyring_diff()) -> keyring();
+    (encrypted_keyring(), encrypted_keyring_diff()) -> encrypted_keyring().
 apply_changes(#{data := OldData, meta := OldMeta}, DiffKeyring) ->
     DiffMeta = maps:get(meta, DiffKeyring, #{}),
     #{
