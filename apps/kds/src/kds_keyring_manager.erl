@@ -180,10 +180,14 @@ handle_event({call, From}, {validate_init, ShareholderId, Share}, not_initialize
     case kds_keyring_initializer:validate(ShareholderId, Share) of
         {ok, {more, _More}} = Result ->
             {keep_state_and_data, {reply, From, Result}};
-        {ok, {done, {EncryptedKeyring, DecryptedKeyring}}} ->
-            NewEncryptedKeyring = kds_keyring:apply_changes(OldKeyring, EncryptedKeyring),
+        {ok, {done, {EncryptedKeyringDiff, DecryptedKeyringDiff}}} ->
+            InitialEncryptedKeyring = #{
+                data => undefined,
+                meta => maps:get(meta, OldKeyring)
+            },
+            NewEncryptedKeyring = kds_keyring:apply_changes(InitialEncryptedKeyring, EncryptedKeyringDiff),
             ok = kds_keyring_storage:create(NewEncryptedKeyring),
-            NewKeyring = kds_keyring:apply_changes(OldKeyring, DecryptedKeyring),
+            NewKeyring = kds_keyring:apply_changes(OldKeyring, DecryptedKeyringDiff),
             NewStateData = StateData#data{keyring = NewKeyring},
             {next_state, unlocked, NewStateData, {reply, From, ok}};
         {error, _Error} = Result ->

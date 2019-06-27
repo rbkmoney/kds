@@ -42,7 +42,8 @@
 }.
 
 -type encrypted_keyring() :: kds_keyring:encrypted_keyring().
--type decrypted_keyring() :: kds_keyring:keyring().
+-type encrypted_keyring_diff() :: kds_keyring:encrypted_keyring_diff().
+-type decrypted_keyring_diff() :: kds_keyring:keyring_diff().
 
 -type state() :: uninitialized | validation.
 
@@ -70,7 +71,7 @@ initialize(Threshold) ->
 
 -spec validate(shareholder_id(), masterkey_share()) ->
     {ok, {more, pos_integer()}} |
-    {ok, {done, {encrypted_keyring(), decrypted_keyring()}}} |
+    {ok, {done, {encrypted_keyring_diff(), decrypted_keyring_diff()}}} |
     {error, validate_errors()} | invalid_activity().
 
 validate(ShareholderId, Share) ->
@@ -190,14 +191,24 @@ get_lifetime(TimerRef) ->
     end.
 
 -spec validate(threshold(), masterkey_shares(), encrypted_keyring()) ->
-    {ok, {done, {encrypted_keyring(), decrypted_keyring()}}} | {error, validate_errors()}.
+    {ok, {done, {encrypted_keyring_diff(), decrypted_keyring_diff()}}} | {error, validate_errors()}.
 
 validate(Threshold, Shares, EncryptedKeyring) ->
     case kds_keysharing:validate_shares(Threshold, Shares) of
         {ok, MasterKey} ->
             case kds_keyring:decrypt(MasterKey, EncryptedKeyring) of
                 {ok, DecryptedKeyring} ->
-                    {ok, {done, {EncryptedKeyring, DecryptedKeyring}}};
+                    InitialEncryptedKeyring = #{
+                        data => undefined,
+                        meta => #{keys => #{}}
+                    },
+                    EncryptedKeyringDiff = kds_keyring:get_changes(InitialEncryptedKeyring, EncryptedKeyring),
+                    InitialKeyring = #{
+                        data => undefined,
+                        meta => #{keys => #{}}
+                    },
+                    KeyringDiff = kds_keyring:get_changes(InitialKeyring, DecryptedKeyring),
+                    {ok, {done, {EncryptedKeyringDiff, KeyringDiff}}};
                 {error, decryption_failed} ->
                     {error, {operation_aborted, failed_to_decrypt_keyring}}
             end;
