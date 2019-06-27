@@ -14,6 +14,7 @@
 -export([delete/1]).
 
 -export([create_old_format/1]).
+-export([read_old_format/1]).
 
 -type config() :: [tuple()].
 
@@ -39,7 +40,7 @@ groups() ->
         {backward_compatibility, [sequence], [
             create_old_format,
             already_exists,
-            read,
+            read_old_format,
             update,
             delete
         ]}
@@ -63,7 +64,7 @@ end_per_group(_, C) ->
 -spec create(config()) -> _.
 
 create(_C) ->
-    Keyring = #{data => <<"initial">>, meta => undefined},
+    Keyring = #{data => <<"initial">>, meta => #{keys => #{}}},
     ok = kds_keyring_storage:create(Keyring).
 
 -spec already_exists(config()) -> _.
@@ -75,7 +76,7 @@ already_exists(_C) ->
 -spec read(config()) -> _.
 
 read(_C) ->
-    #{data := <<"initial">>, meta := undefined} = kds_keyring_storage:read().
+    #{data := <<"initial">>, meta := #{keys := #{}}} = kds_keyring_storage:read().
 
 -spec update(config()) -> _.
 
@@ -95,6 +96,11 @@ create_old_format(C) ->
     KeyringStorageOpts = application:get_env(kds, keyring_storage_opts, #{}),
     KeyringPath = maps:get(keyring_path, KeyringStorageOpts, filename:join(config(priv_dir, C), "keyring")),
     ok = file:write_file(KeyringPath, <<"initial">>).
+
+-spec read_old_format(config()) -> _.
+
+read_old_format(_C) ->
+    #{data := <<"initial">>, meta := undefined} = kds_keyring_storage:read().
 
 config(Key, Config) ->
     config(Key, Config, undefined).

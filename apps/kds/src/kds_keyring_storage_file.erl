@@ -66,7 +66,7 @@ handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
             case jsx:is_json(Data) of
                 true ->
                     DecodedData = decode_encrypted_keyring(
-                        jsx:decode(Data, [return_maps, {labels, attempt_atom}])),
+                        jsx:decode(Data, [return_maps, {labels, binary}])),
                     {ok, #{data => maps:get(data, DecodedData), meta => maps:get(meta, DecodedData)}};
                 false ->
                     {ok, #{data => Data, meta => undefined}}
@@ -102,14 +102,25 @@ tmp_keyring_path(Path) ->
 
 -spec decode_encrypted_keyring(#{data := binary(), meta := kds_keyring:keyring_meta(binary())}) ->
     kds_keyring:encrypted_keyring().
-decode_encrypted_keyring(#{meta := #{keys := KeysMeta}} = Keyring)->
-    Keyring#{
+decode_encrypted_keyring(#{
+    <<"data">> := KeyringData,
+    <<"meta">> := #{<<"keys">> := KeysMeta}
+})->
+    #{
+        data => KeyringData,
         meta => #{
             keys => decode_number_key_map(KeysMeta)
         }
-    };
-decode_encrypted_keyring(#{meta := <<"undefined">>} = Keyring)->
-    Keyring#{meta => undefined}.
+    }.
 
 decode_number_key_map(Map) ->
-    maps:fold(fun (K, V, Acc) -> Acc#{binary_to_integer(K) => V} end, #{}, Map).
+    maps:fold(
+        fun (K, #{<<"retired">> := Retired}, Acc) ->
+            Acc#{
+                binary_to_integer(K) => #{
+                    retired => Retired
+                }
+            }
+        end,
+        #{},
+        Map).

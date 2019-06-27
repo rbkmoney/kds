@@ -31,7 +31,7 @@
 -type key() :: binary().
 -type key_id() :: byte().
 -type encrypted_keyring() :: #{
-    data := binary() | undefined,
+    data := binary(),
     meta := keyring_meta(key_id()) | undefined
 }.
 
