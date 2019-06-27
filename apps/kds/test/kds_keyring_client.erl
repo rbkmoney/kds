@@ -274,14 +274,18 @@ get_state(RootUrl) ->
     decode_state(State).
 
 -spec update_keyring_meta(kds_keyring:keyring_meta(), woody:url()) ->
-    ok | {error, {invalid_keyring_meta, binary()}}.
+    ok |
+    {error, {invalid_keyring_meta, binary()}} |
+    {error, {invalid_status, kds_keyring_manager:state()}}.
 update_keyring_meta(KeyringMeta, RootUrl) ->
     try
         EncodedMeta = kds_keyring_meta:encode_keyring_meta(KeyringMeta),
         kds_woody_client:call(keyring_management, 'UpdateKeyringMeta', [EncodedMeta], RootUrl)
     catch
         #'InvalidKeyringMeta'{reason = Reason} ->
-            {error, {invalid_keyring_meta, Reason}}
+            {error, {invalid_keyring_meta, Reason}};
+        #'InvalidStatus'{status = Status} ->
+            {error, {invalid_status, Status}}
     end.
 
 -spec get_keyring_meta(woody:url()) -> kds_keyring:keyring_meta().

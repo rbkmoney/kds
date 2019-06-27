@@ -175,20 +175,13 @@ init([]) ->
 handle_event({call, From}, {initialize, Threshold}, not_initialized, _StateData) ->
     Result = kds_keyring_initializer:initialize(Threshold),
     {keep_state_and_data, {reply, From, Result}};
-handle_event({call, From}, {validate_init, ShareholderId, Share}, not_initialized,
-    #data{keyring = OldKeyring} = StateData) ->
+handle_event({call, From}, {validate_init, ShareholderId, Share}, not_initialized, StateData) ->
     case kds_keyring_initializer:validate(ShareholderId, Share) of
         {ok, {more, _More}} = Result ->
             {keep_state_and_data, {reply, From, Result}};
-        {ok, {done, {EncryptedKeyringDiff, DecryptedKeyringDiff}}} ->
-            InitialEncryptedKeyring = #{
-                data => undefined,
-                meta => maps:get(meta, OldKeyring)
-            },
-            NewEncryptedKeyring = kds_keyring:apply_changes(InitialEncryptedKeyring, EncryptedKeyringDiff),
-            ok = kds_keyring_storage:create(NewEncryptedKeyring),
-            NewKeyring = kds_keyring:apply_changes(OldKeyring, DecryptedKeyringDiff),
-            NewStateData = StateData#data{keyring = NewKeyring},
+        {ok, {done, {EncryptedKeyring, DecryptedKeyring}}} ->
+            ok = kds_keyring_storage:create(EncryptedKeyring),
+            NewStateData = StateData#data{keyring = DecryptedKeyring},
             {next_state, unlocked, NewStateData, {reply, From, ok}};
         {error, _Error} = Result ->
             {keep_state_and_data, {reply, From, Result}}
@@ -277,15 +270,13 @@ handle_event({call, From}, cancel_rekey, unlocked, _StateData) ->
 
 handle_event({call, From}, get_status, State, _Data) ->
     {keep_state_and_data, {reply, From, {ok, generate_status(State)}}};
+handle_event({call, From}, {update_meta, _UpdateKeyringMeta}, not_initialized, _StateData) ->
+    {keep_state_and_data, {reply, From, {error, {invalid_status, not_initialized}}}};
 handle_event({call, From}, {update_meta, UpdateKeyringMeta}, _State,
     #data{keyring = #{meta := KeyringMeta} = Keyring} = Data) ->
     NewKeyringMeta = kds_keyring_meta:update_meta(KeyringMeta, UpdateKeyringMeta),
-    ok = try kds_keyring_storage:read() of
-        EncryptedKeyring ->
-            kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta})
-    catch not_found ->
-        ok
-    end,
+    EncryptedKeyring = kds_keyring_storage:read(),
+    ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
     {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}};
 handle_event({call, From}, get_meta, _State, #data{keyring = #{meta := KeyringMeta}}) ->
     {keep_state_and_data, {reply, From, {ok, KeyringMeta}}};
