@@ -18,8 +18,6 @@
 -export_type([key_id/0]).
 -export_type([keyring/0]).
 -export_type([keyring_data/0]).
--export_type([keyring_meta/0]).
--export_type([keyring_meta_diff/0]).
 -export_type([encrypted_keyring/0]).
 
 -type masterkey() :: kds_keysharing:masterkey().
@@ -29,21 +27,7 @@
     data := binary(),
     meta := keyring_meta() | undefined
 }.
-
--type key_meta() :: #{
-    retired := boolean()
-}.
--type keyring_meta() :: #{
-    version := pos_integer(),
-    keys := #{
-        key_id() => key_meta()
-    }
-}.
--type keyring_meta_diff() :: #{
-    keys => #{
-        key_id() => key_meta()
-    }
-}.
+-type keyring_meta() :: kds_keyring_meta:keyring_meta().
 
 -type keyring() :: #{
     data := keyring_data(),

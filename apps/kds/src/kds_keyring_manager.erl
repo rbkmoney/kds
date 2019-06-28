@@ -39,7 +39,7 @@
 -record(data, {
     keyring :: #{
         data := undefined | kds_keyring:keyring_data(),
-        meta := undefined | kds_keyring:keyring_meta()
+        meta := undefined | kds_keyring_meta:keyring_meta()
     }
 }).
 
@@ -137,11 +137,11 @@ cancel_rekey() ->
 get_status() ->
     call(get_status).
 
--spec update_meta(kds_keyring:keyring_meta_diff()) -> ok.
+-spec update_meta(kds_keyring_meta:keyring_meta_diff()) -> ok.
 update_meta(KeyringMeta) ->
     call({update_meta, KeyringMeta}).
 
--spec get_meta() -> kds_keyring:keyring_meta().
+-spec get_meta() -> kds_keyring_meta:keyring_meta().
 get_meta() ->
     call(get_meta).
 

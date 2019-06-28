@@ -9,8 +9,24 @@
 -export([decode_keyring_meta/1]).
 -export([encode_keyring_meta/1]).
 
--type keyring_meta() :: kds_keyring:keyring_meta().
--type keyring_meta_diff() :: kds_keyring:keyring_meta_diff().
+-export_type([keyring_meta/0]).
+-export_type([keyring_meta_diff/0]).
+
+-type keyring_meta() :: #{
+    version := pos_integer(),
+    keys := #{
+        key_id() => key_meta()
+    }
+}.
+-type keyring_meta_diff() :: #{
+    keys => #{
+        key_id() => key_meta()
+    }
+}.
+-type key_meta() :: #{
+    retired := boolean()
+}.
+-type key_id() :: kds_keyring:key_id().
 -type encoded_keyring_meta() :: #'KeyringMeta'{}.
 
 -spec get_default_keyring_meta(kds_keyring:keyring_data()) -> keyring_meta().
