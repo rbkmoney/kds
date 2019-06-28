@@ -181,7 +181,6 @@ handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
     try
         DecodedKeyringMeta = kds_keyring_meta:decode_keyring_meta(KeyringMeta),
         ok = kds_keyring_meta:validate_meta(DecodedKeyringMeta),
-        ok = kds_keyring_meta:changes_will_be_made(kds_keyring_manager:get_meta(), DecodedKeyringMeta),
         kds_keyring_manager:update_meta(DecodedKeyringMeta)
     of
         ok ->

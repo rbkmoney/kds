@@ -274,10 +274,14 @@ handle_event({call, From}, {update_meta, _UpdateKeyringMeta}, not_initialized, _
     {keep_state_and_data, {reply, From, {error, {invalid_status, not_initialized}}}};
 handle_event({call, From}, {update_meta, UpdateKeyringMeta}, _State,
     #data{keyring = #{meta := KeyringMeta} = Keyring} = Data) ->
-    NewKeyringMeta = kds_keyring_meta:update_meta(KeyringMeta, UpdateKeyringMeta),
-    EncryptedKeyring = kds_keyring_storage:read(),
-    ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
-    {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}};
+    case kds_keyring_meta:update_meta(KeyringMeta, UpdateKeyringMeta) of
+        KeyringMeta ->
+            {keep_state_and_data, {reply, From, {error, no_changes}}};
+        NewKeyringMeta ->
+            EncryptedKeyring = kds_keyring_storage:read(),
+            ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
+            {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}}
+    end;
 handle_event({call, From}, get_meta, _State, #data{keyring = #{meta := KeyringMeta}}) ->
     {keep_state_and_data, {reply, From, {ok, KeyringMeta}}};
 handle_event({call, From}, _Event, State, _StateData) ->

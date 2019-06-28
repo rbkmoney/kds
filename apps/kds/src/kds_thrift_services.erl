@@ -24,7 +24,7 @@ http_handler(Code) ->
 path(keyring_management) ->
     "/v2/keyring";
 path(keyring_storage) ->
-    "/v1/keyring_storage".
+    "/v2/keyring_storage".
 
 -spec service(service_name()) -> woody:service().
 service(keyring_management) ->
