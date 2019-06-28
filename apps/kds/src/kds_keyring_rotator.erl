@@ -10,8 +10,8 @@
 -export([init/1, callback_mode/0]).
 
 -export([start_link/0]).
--export([initialize/2]).
--export([confirm/2]).
+-export([initialize/0]).
+-export([confirm/4]).
 -export([get_status/0]).
 -export([cancel/0]).
 -export([handle_event/4]).
@@ -19,8 +19,6 @@
 -export_type([state/0]).
 
 -record(data, {
-    encrypted_keyring :: encrypted_keyring() | undefined,
-    keyring :: keyring() | undefined,
     shares = #{} :: #{kds_keysharing:share_id() => {shareholder_id(), masterkey_share()}},
     timer :: reference() | undefined
 }).
@@ -39,14 +37,12 @@
 -type masterkey_share() :: kds_keysharing:masterkey_share().
 -type masterkey_shares() :: kds_keysharing:masterkey_shares().
 -type keyring() :: kds_keyring:keyring().
--type keyring_diff() :: kds_keyring:keyring_diff().
 -type encrypted_keyring() :: kds_keyring:encrypted_keyring().
--type encrypted_keyring_diff() :: kds_keyring:encrypted_keyring_diff().
 -type rotate_errors() ::
     wrong_masterkey | failed_to_recover.
 -type invalid_activity() :: {error, {invalid_activity, {rotation, state()}}}.
 -type rotate_resp() ::
-    {ok, {done, {encrypted_keyring_diff(), keyring_diff()}}} |
+    {ok, {done, {encrypted_keyring(), keyring()}}} |
     {ok, {more, pos_integer()}}|
     {error, {operation_aborted, rotate_errors()}}.
 
@@ -59,15 +55,16 @@ callback_mode() -> handle_event_function.
 start_link() ->
     gen_statem:start_link({local, ?STATEM}, ?MODULE, [], []).
 
--spec initialize(keyring(), encrypted_keyring()) -> ok | invalid_activity().
+-spec initialize() -> ok | invalid_activity().
 
-initialize(Keyring, EncryptedKeyring) ->
-    call({initialize, Keyring, EncryptedKeyring}).
+initialize() ->
+    call(initialize).
 
--spec confirm(shareholder_id(), masterkey_share()) -> rotate_resp() | invalid_activity().
+-spec confirm(shareholder_id(), masterkey_share(), encrypted_keyring(), keyring()) ->
+    rotate_resp() | invalid_activity().
 
-confirm(ShareholderId, Share) ->
-    call({confirm, ShareholderId, Share}).
+confirm(ShareholderId, Share, EncryptedOldKeyring, OldKeyring) ->
+    call({confirm, ShareholderId, Share, EncryptedOldKeyring, OldKeyring}).
 
 -spec cancel() -> ok.
 
@@ -92,17 +89,14 @@ init([]) ->
 
 %% Successful workflow events
 
-handle_event({call, From}, {initialize, Keyring, EncryptedKeyring}, uninitialized, _Data) ->
+handle_event({call, From}, initialize, uninitialized, _Data) ->
     TimerRef = erlang:start_timer(get_timeout(), self(), lifetime_expired),
     {next_state,
         validation,
-        #data{keyring = Keyring, encrypted_keyring = EncryptedKeyring, timer = TimerRef}, {reply, From, ok}};
+        #data{timer = TimerRef}, {reply, From, ok}};
 
-handle_event({call, From}, {confirm, ShareholderId, Share}, validation,
-    #data{encrypted_keyring = EncryptedOldKeyring,
-        keyring = OldKeyring,
-        shares = Shares,
-        timer = TimerRef} = StateData) ->
+handle_event({call, From}, {confirm, ShareholderId, Share, EncryptedOldKeyring, OldKeyring}, validation,
+    #data{shares = Shares, timer = TimerRef} = StateData) ->
     #share{threshold = Threshold, x = X} = kds_keysharing:decode_share(Share),
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Threshold ->
@@ -162,7 +156,7 @@ get_lifetime(TimerRef) ->
     end.
 
 -spec update_keyring(keyring(), encrypted_keyring(), masterkey_shares()) ->
-    {ok, {done, {encrypted_keyring_diff(), keyring_diff()}}} | {error, {operation_aborted, rotate_errors()}}.
+    {ok, {done, {encrypted_keyring(), keyring()}}} | {error, {operation_aborted, rotate_errors()}}.
 
 update_keyring(OldKeyring, EncryptedOldKeyring, AllShares) ->
     case kds_keysharing:recover(AllShares) of
@@ -171,9 +165,7 @@ update_keyring(OldKeyring, EncryptedOldKeyring, AllShares) ->
                 {ok, OldKeyring} ->
                     NewKeyring = kds_keyring:rotate(OldKeyring),
                     EncryptedNewKeyring = kds_keyring:encrypt(MasterKey, NewKeyring),
-                    DiffKeyring = kds_keyring:get_changes(OldKeyring, NewKeyring),
-                    DiffEncryptedKeyring = kds_keyring:get_changes(EncryptedOldKeyring, EncryptedNewKeyring),
-                    {ok, {done, {DiffEncryptedKeyring, DiffKeyring}}};
+                    {ok, {done, {EncryptedNewKeyring, NewKeyring}}};
                 {error, Error} ->
                     {error, {operation_aborted, Error}}
             end;

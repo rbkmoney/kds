@@ -2,13 +2,9 @@
 
 -export([new/0]).
 -export([rotate/1]).
--export([incr_version/1]).
 -export([get_key/2]).
 -export([get_keys/1]).
 -export([get_current_key/1]).
-
--export([get_changes/2]).
--export([apply_changes/2]).
 
 -export([encrypt/2]).
 -export([decrypt/2]).
@@ -21,8 +17,6 @@
 -export_type([key/0]).
 -export_type([key_id/0]).
 -export_type([keyring/0]).
--export_type([keyring_diff/0]).
--export_type([encrypted_keyring_diff/0]).
 -export_type([keyring_data/0]).
 -export_type([keyring_meta/0]).
 -export_type([keyring_meta_diff/0]).
@@ -34,16 +28,6 @@
 -type encrypted_keyring() :: #{
     data := binary(),
     meta := keyring_meta() | undefined
-}.
-
--type keyring_diff() :: #{
-    data => keyring_data(),
-    meta => keyring_meta_diff()
-}.
-
--type encrypted_keyring_diff() :: #{
-    data => binary(),
-    meta => keyring_meta_diff()
 }.
 
 -type key_meta() :: #{
@@ -104,22 +88,13 @@ rotate(#{data := #{current_key := CurrentKeyId, keys := Keys}, meta := #{version
                     keys => Keys#{NewCurrentKeyId => kds_crypto:key()}
                 },
                 meta => #{
-                    version => Version,
+                    version => Version + 1,
                     keys => KeysMeta#{NewCurrentKeyId => #{retired => false}}
                 }
             };
         true ->
             throw(keyring_full)
     end.
-
--spec incr_version(keyring()) -> keyring();
-    (encrypted_keyring()) -> encrypted_keyring().
-incr_version(#{meta := #{version := Version} = KeyringMeta} = Keyring) ->
-    Keyring#{
-        meta => KeyringMeta#{
-            version => Version + 1
-        }
-    }.
 
 -spec get_key(key_id(), keyring()) -> {ok, {key_id(), key()}} | {error, not_found}.
 get_key(KeyId, #{data := #{keys := Keys}}) ->
@@ -138,23 +113,6 @@ get_keys(#{data := #{keys := Keys}}) ->
 get_current_key(#{data := #{current_key := CurrentKeyId, keys := Keys}}) ->
     CurrentKey = maps:get(CurrentKeyId, Keys),
     {CurrentKeyId, CurrentKey}.
-
--spec get_changes(keyring(), keyring()) -> keyring_diff();
-    (encrypted_keyring(), encrypted_keyring()) -> encrypted_keyring_diff().
-get_changes(#{meta := OldMeta}, #{data := NewData, meta := NewMeta}) ->
-    #{
-        data => NewData,
-        meta => kds_keyring_meta:get_changes(OldMeta, NewMeta)
-    }.
-
--spec apply_changes(keyring(), keyring_diff()) -> keyring();
-    (encrypted_keyring(), encrypted_keyring_diff()) -> encrypted_keyring().
-apply_changes(#{data := OldData, meta := OldMeta}, DiffKeyring) ->
-    DiffMeta = maps:get(meta, DiffKeyring, #{}),
-    #{
-        data => maps:get(data, DiffKeyring, OldData),
-        meta => kds_keyring_meta:update_add_meta(OldMeta, DiffMeta)
-    }.
 
 %%
 

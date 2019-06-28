@@ -4,9 +4,7 @@
 
 %% API
 -export([get_default_keyring_meta/1]).
--export([get_changes/2]).
 -export([update_meta/2]).
--export([update_add_meta/2]).
 -export([validate_meta_diff/1]).
 -export([decode_keyring_meta/1]).
 -export([encode_keyring_meta/1]).
@@ -21,28 +19,8 @@ get_default_keyring_meta(KeyringData) ->
     KeysMeta = maps:map(fun (_KeyId, _Key) -> #{retired => false} end, Keys),
     #{version => 1, keys => KeysMeta}.
 
--spec get_changes(keyring_meta(), keyring_meta()) -> kds_keyring:keyring_meta_diff().
-get_changes(#{keys := OldKeysMeta}, #{keys := NewKeysMeta}) ->
-    UpdateKeysMeta = maps:fold(
-        fun (K, V, Acc) ->
-            case maps:get(K, OldKeysMeta, #{}) of
-                V ->
-                    Acc;
-                _DifferentKeyMeta ->
-                    Acc#{K => V}
-            end
-        end,
-        #{}, NewKeysMeta
-    ),
-    case maps:size(UpdateKeysMeta) of
-        0 ->
-            #{};
-        _UpdatedKeys ->
-            #{keys => UpdateKeysMeta}
-    end.
-
 -spec update_meta(keyring_meta(), keyring_meta_diff()) -> keyring_meta().
-update_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
+update_meta(#{version := Version, keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
     KeysMeta = maps:get(keys, UpdateMeta, #{}),
     NewKeysMeta = maps:fold(
         fun (K, V, Acc) ->
@@ -50,18 +28,12 @@ update_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
             Acc#{K => maps:merge(V, UpdateKeyMeta)}
         end,
         #{}, OldKeysMeta),
-    OldMeta#{keys => NewKeysMeta}.
-
--spec update_add_meta(keyring_meta(), keyring_meta()) -> keyring_meta().
-update_add_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
-    UpdateKeysMeta = maps:get(keys, UpdateMeta, #{}),
-    NewKeysMeta = maps:fold(
-        fun (K, V, Acc) ->
-            OldKeyMeta = maps:get(K, OldKeysMeta, #{}),
-            Acc#{K => maps:merge(OldKeyMeta, V)}
-        end,
-        OldKeysMeta, UpdateKeysMeta),
-    OldMeta#{keys => NewKeysMeta}.
+    case OldMeta#{keys => NewKeysMeta} of
+        OldMeta ->
+            OldMeta;
+        NewMeta ->
+            NewMeta#{version => Version + 1}
+    end.
 
 -spec validate_meta_diff(keyring_meta_diff()) -> ok.
 validate_meta_diff(#{keys := KeysMeta}) ->
