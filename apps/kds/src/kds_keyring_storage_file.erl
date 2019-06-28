@@ -12,6 +12,7 @@
 
 -define(SERVER, ?MODULE).
 -define(DEFAULT_KEYRING_PATH, "/var/lib/kds/keyring").
+-define(FORMAT_VERSION, 1).
 
 -record(state, {
     keyring_path :: string()
@@ -54,8 +55,11 @@ init(KeyringPath) ->
 handle_call({create, Keyring}, _From, #state{keyring_path = KeyringPath} = State) ->
     Reply = case filelib:is_regular(KeyringPath) of
         false ->
+            KeyringWithFormat = Keyring#{
+                format_version => ?FORMAT_VERSION
+            },
             ok = filelib:ensure_dir(KeyringPath),
-            ok = atomic_write(KeyringPath, jsx:encode(Keyring));
+            ok = atomic_write(KeyringPath, jsx:encode(KeyringWithFormat));
         true ->
             {error, already_exists}
     end,
@@ -76,8 +80,11 @@ handle_call(read, _From, #state{keyring_path = KeyringPath} = State) ->
     end,
     {reply, Reply, State};
 handle_call({update, Keyring}, _From, #state{keyring_path = KeyringPath} = State) ->
+    KeyringWithFormat = Keyring#{
+        format_version => ?FORMAT_VERSION
+    },
     ok = filelib:ensure_dir(KeyringPath),
-    ok = atomic_write(KeyringPath, jsx:encode(Keyring)),
+    ok = atomic_write(KeyringPath, jsx:encode(KeyringWithFormat)),
     {reply, ok, State};
 handle_call(delete, _From, #state{keyring_path = KeyringPath} = State) ->
     _ = case file:delete(KeyringPath) of
@@ -103,6 +110,7 @@ tmp_keyring_path(Path) ->
 -spec decode_encrypted_keyring(#{data := binary(), meta := kds_keyring:keyring_meta(binary())}) ->
     kds_keyring:encrypted_keyring().
 decode_encrypted_keyring(#{
+    <<"format_version">> := 1,
     <<"data">> := KeyringData,
     <<"meta">> := #{<<"keys">> := KeysMeta}
 })->
