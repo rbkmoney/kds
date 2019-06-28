@@ -40,7 +40,6 @@
     }
 }.
 -type keyring_meta_diff() :: #{
-    version => pos_integer(),
     keys => #{
         key_id() => key_meta()
     }
