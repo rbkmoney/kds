@@ -11,6 +11,8 @@
 
 -export([init_check_keyring/1]).
 -export([locked_unlocked_check_keyring/1]).
+-export([rotation_version_check/1]).
+-export([update_meta_version_check/1]).
 
 -type config() :: [{tuple()}].
 
@@ -29,7 +31,9 @@ groups() ->
     [
         {basic_lifecycle, [sequence], [
             init_check_keyring,
-            locked_unlocked_check_keyring
+            locked_unlocked_check_keyring,
+            rotation_version_check,
+            update_meta_version_check
         ]}
     ].
 
@@ -70,7 +74,7 @@ init_check_keyring(C) ->
     _ = kds_ct_keyring:init(C),
     _ = ?assertMatch(
         #{
-            meta := #{keys := #{0 := #{retired := false}}},
+            meta := #{version := 1, keys := #{0 := #{retired := false}}},
             data := #{current_key := 0, keys := #{0 := _Key0}}
         },
         get_keyring(C)
@@ -81,7 +85,7 @@ init_check_keyring(C) ->
 locked_unlocked_check_keyring(C) ->
     _ = ?assertMatch(
         #{
-            meta := #{keys := #{0 := #{retired := false}}},
+            meta := #{version := 1, keys := #{0 := #{retired := false}}},
             data := #{current_key := 0, keys := #{0 := _Key0}}
         },
         get_keyring(C)
@@ -94,8 +98,48 @@ locked_unlocked_check_keyring(C) ->
     _ = kds_ct_keyring:unlock(C),
     _ = ?assertMatch(
         #{
-            meta := #{keys := #{0 := #{retired := false}}},
+            meta := #{version := 1, keys := #{0 := #{retired := false}}},
             data := #{current_key := 0, keys := #{0 := _Key0}}
+        },
+        get_keyring(C)
+    ).
+
+-spec rotation_version_check(config()) -> _.
+
+rotation_version_check(C) ->
+    _ = ?assertMatch(
+        #{
+            meta := #{version := 1, keys := #{0 := #{retired := false}}},
+            data := #{current_key := 0, keys := #{0 := _Key0}}
+        },
+        get_keyring(C)
+    ),
+    _ = kds_ct_keyring:rotate(C),
+    _ = ?assertMatch(
+        #{
+            meta := #{version := 2, keys := #{0 := #{retired := false}, 1 := #{retired := false}}},
+            data := #{current_key := 1, keys := #{0 := _Key0, 1 := _Key1}}
+        },
+        get_keyring(C)
+    ).
+
+-spec update_meta_version_check(config()) -> _.
+
+update_meta_version_check(C) ->
+    _ = ?assertMatch(
+        #{
+            meta := #{version := 2, keys := #{0 := #{retired := false}, 1 := #{retired := false}}},
+            data := #{current_key := 1, keys := #{0 := _Key0, 1 := _Key1}}
+        },
+        get_keyring(C)
+    ),
+    ok = kds_keyring_client:update_keyring_meta(
+        #{keys => #{0 => #{retired => true}}},
+        management_root_url(C)),
+    _ = ?assertMatch(
+        #{
+            meta := #{version := 3, keys := #{0 := #{retired := true}, 1 := #{retired := false}}},
+            data := #{current_key := 1, keys := #{0 := _Key0, 1 := _Key1}}
         },
         get_keyring(C)
     ).
@@ -106,7 +150,7 @@ locked_unlocked_check_keyring(C) ->
 
 get_keyring(C) ->
     SSLOpts = [{cacertfile, cacertfile(C)}, {certfile, clientcertfile(C)}],
-    kds_keyring_client:get_keyring(root_url(C), SSLOpts).
+    kds_keyring_client:get_keyring(storage_root_url(C), SSLOpts).
 
 config(Key, Config) ->
     config(Key, Config, undefined).
@@ -119,8 +163,11 @@ config(Key, Config, Default) ->
             Default
     end.
 
-root_url(C) ->
+storage_root_url(C) ->
     config(storage_root_url, C).
+
+management_root_url(C) ->
+    config(management_root_url, C).
 
 cacertfile(C) ->
     config(cacertfile, C).

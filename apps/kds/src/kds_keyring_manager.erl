@@ -39,7 +39,7 @@
 -record(data, {
     keyring :: #{
         data := undefined | kds_keyring:keyring_data(),
-        meta := kds_keyring:keyring_meta(kds_keyring:key_id())
+        meta := undefined | kds_keyring:keyring_meta()
     }
 }).
 
@@ -137,11 +137,11 @@ cancel_rekey() ->
 get_status() ->
     call(get_status).
 
--spec update_meta(kds_keyring:keyring_meta(kds_keyring:key_id())) -> ok.
+-spec update_meta(kds_keyring:keyring_meta_diff()) -> ok.
 update_meta(KeyringMeta) ->
     call({update_meta, KeyringMeta}).
 
--spec get_meta() -> kds_keyring:keyring_meta(kds_keyring:key_id()).
+-spec get_meta() -> kds_keyring:keyring_meta().
 get_meta() ->
     call(get_meta).
 
@@ -164,7 +164,7 @@ init([]) ->
             {ok, locked, #data{keyring = #{data => undefined, meta => KeyringMeta}}}
     catch
         not_found ->
-            {ok, not_initialized, #data{keyring = #{data => undefined, meta => #{keys => #{}}}}}
+            {ok, not_initialized, #data{keyring = #{data => undefined, meta => undefined}}}
     end.
 
 -spec handle_event(gen_statem:event_type(), term(), state(), data()) ->
@@ -230,9 +230,9 @@ handle_event({call, From}, {confirm_rotate, ShareholderId, Share}, unlocked,
         {ok, {done, {EncryptedKeyringDiff, KeyringDiff}}} ->
             OldEncryptedKeyring = kds_keyring_storage:read(),
             NewEncryptedKeyring = kds_keyring:apply_changes(OldEncryptedKeyring, EncryptedKeyringDiff),
-            ok = kds_keyring_storage:update(NewEncryptedKeyring),
+            ok = kds_keyring_storage:update(kds_keyring:incr_version(NewEncryptedKeyring)),
             NewKeyring = kds_keyring:apply_changes(OldKeyring, KeyringDiff),
-            NewStateData = StateData#data{keyring = NewKeyring},
+            NewStateData = StateData#data{keyring = kds_keyring:incr_version(NewKeyring)},
             {keep_state, NewStateData, {reply, From, ok}};
         {error, Error} ->
             {keep_state_and_data, {reply, From, {error, Error}}}
@@ -279,8 +279,10 @@ handle_event({call, From}, {update_meta, UpdateKeyringMeta}, _State,
             {keep_state_and_data, {reply, From, {error, no_changes}}};
         NewKeyringMeta ->
             EncryptedKeyring = kds_keyring_storage:read(),
-            ok = kds_keyring_storage:update(EncryptedKeyring#{meta => NewKeyringMeta}),
-            {keep_state, Data#data{keyring = Keyring#{meta => NewKeyringMeta}}, {reply, From, {ok, ok}}}
+            NewEncryptedKeyring = EncryptedKeyring#{meta => NewKeyringMeta},
+            ok = kds_keyring_storage:update(kds_keyring:incr_version(NewEncryptedKeyring)),
+            NewKeyring = Keyring#{meta => NewKeyringMeta},
+            {keep_state, Data#data{keyring = kds_keyring:incr_version(NewKeyring)}, {reply, From, {ok, ok}}}
     end;
 handle_event({call, From}, get_meta, _State, #data{keyring = #{meta := KeyringMeta}}) ->
     {keep_state_and_data, {reply, From, {ok, KeyringMeta}}};

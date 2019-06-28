@@ -386,6 +386,7 @@ decode_encrypted_share(#'EncryptedMasterKeyShare' {
     }.
 
 decode_keyring(#'Keyring'{
+    version = Version,
     current_key_id = CurrentKeyId,
     keys = Keys
 }) ->
@@ -395,6 +396,7 @@ decode_keyring(#'Keyring'{
             keys => decode_keys(Keys)
         },
         meta => #{
+            version => Version,
             keys => decode_keys_meta(Keys)
         }
     }.

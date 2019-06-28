@@ -34,11 +34,12 @@ encode_keyring(#{
         keys := Keys
     },
     meta := #{
+        version := Version,
         keys := KeysMeta
     }
 }) ->
     #'Keyring'{
-        version = 0,
+        version = Version,
         current_key_id = CurrentKeyId,
         keys = encode_keys(Keys, KeysMeta)
     }.

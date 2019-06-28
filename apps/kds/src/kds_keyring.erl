@@ -2,6 +2,7 @@
 
 -export([new/0]).
 -export([rotate/1]).
+-export([incr_version/1]).
 -export([get_key/2]).
 -export([get_keys/1]).
 -export([get_current_key/1]).
@@ -23,7 +24,7 @@
 -export_type([keyring_diff/0]).
 -export_type([encrypted_keyring_diff/0]).
 -export_type([keyring_data/0]).
--export_type([keyring_meta/1]).
+-export_type([keyring_meta/0]).
 -export_type([keyring_meta_diff/0]).
 -export_type([encrypted_keyring/0]).
 
@@ -32,7 +33,7 @@
 -type key_id() :: byte().
 -type encrypted_keyring() :: #{
     data := binary(),
-    meta := keyring_meta(key_id()) | undefined
+    meta := keyring_meta() | undefined
 }.
 
 -type keyring_diff() :: #{
@@ -48,12 +49,14 @@
 -type key_meta() :: #{
     retired := boolean()
 }.
--type keyring_meta(KeyId) :: #{
+-type keyring_meta() :: #{
+    version := pos_integer(),
     keys := #{
-        KeyId => key_meta()
+        key_id() => key_meta()
     }
 }.
 -type keyring_meta_diff() :: #{
+    version => pos_integer(),
     keys => #{
         key_id() => key_meta()
     }
@@ -61,7 +64,7 @@
 
 -type keyring() :: #{
     data := keyring_data(),
-    meta := keyring_meta(key_id())
+    meta := keyring_meta()
 }.
 
 -type keyring_data() :: #{
@@ -81,6 +84,7 @@ new() ->
             keys => #{0 => kds_crypto:key()}
         },
         meta => #{
+            version => 1,
             keys => #{
                 0 => #{
                     retired => false
@@ -90,7 +94,7 @@ new() ->
     }.
 
 -spec rotate(keyring()) -> keyring().
-rotate(#{data := #{current_key := CurrentKeyId, keys := Keys}, meta := #{keys := KeysMeta}}) ->
+rotate(#{data := #{current_key := CurrentKeyId, keys := Keys}, meta := #{version := Version, keys := KeysMeta}}) ->
     <<NewCurrentKeyId>> = <<(CurrentKeyId + 1)>>,
     case maps:is_key(NewCurrentKeyId, Keys) of
         false ->
@@ -100,12 +104,22 @@ rotate(#{data := #{current_key := CurrentKeyId, keys := Keys}, meta := #{keys :=
                     keys => Keys#{NewCurrentKeyId => kds_crypto:key()}
                 },
                 meta => #{
+                    version => Version,
                     keys => KeysMeta#{NewCurrentKeyId => #{retired => false}}
                 }
             };
         true ->
             throw(keyring_full)
     end.
+
+-spec incr_version(keyring()) -> keyring();
+    (encrypted_keyring()) -> encrypted_keyring().
+incr_version(#{meta := #{version := Version} = KeyringMeta} = Keyring) ->
+    Keyring#{
+        meta => KeyringMeta#{
+            version => Version + 1
+        }
+    }.
 
 -spec get_key(key_id(), keyring()) -> {ok, {key_id(), key()}} | {error, not_found}.
 get_key(KeyId, #{data := #{keys := Keys}}) ->

@@ -7,18 +7,19 @@
 -export([get_changes/2]).
 -export([update_meta/2]).
 -export([update_add_meta/2]).
--export([validate_meta/1]).
+-export([validate_meta_diff/1]).
 -export([decode_keyring_meta/1]).
 -export([encode_keyring_meta/1]).
 
--type keyring_meta() :: kds_keyring:keyring_meta(kds_keyring:key_id()).
+-type keyring_meta() :: kds_keyring:keyring_meta().
+-type keyring_meta_diff() :: kds_keyring:keyring_meta_diff().
 -type encoded_keyring_meta() :: #'KeyringMeta'{}.
 
 -spec get_default_keyring_meta(kds_keyring:keyring_data()) -> keyring_meta().
 get_default_keyring_meta(KeyringData) ->
     Keys = maps:get(keys, KeyringData),
     KeysMeta = maps:map(fun (_KeyId, _Key) -> #{retired => false} end, Keys),
-    #{keys => KeysMeta}.
+    #{version => 1, keys => KeysMeta}.
 
 -spec get_changes(keyring_meta(), keyring_meta()) -> kds_keyring:keyring_meta_diff().
 get_changes(#{keys := OldKeysMeta}, #{keys := NewKeysMeta}) ->
@@ -40,7 +41,7 @@ get_changes(#{keys := OldKeysMeta}, #{keys := NewKeysMeta}) ->
             #{keys => UpdateKeysMeta}
     end.
 
--spec update_meta(keyring_meta(), keyring_meta()) -> keyring_meta().
+-spec update_meta(keyring_meta(), keyring_meta_diff()) -> keyring_meta().
 update_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
     KeysMeta = maps:get(keys, UpdateMeta, #{}),
     NewKeysMeta = maps:fold(
@@ -62,8 +63,8 @@ update_add_meta(#{keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
         OldKeysMeta, UpdateKeysMeta),
     OldMeta#{keys => NewKeysMeta}.
 
--spec validate_meta(keyring_meta()) -> ok.
-validate_meta(#{keys := KeysMeta}) ->
+-spec validate_meta_diff(keyring_meta_diff()) -> ok.
+validate_meta_diff(#{keys := KeysMeta}) ->
     lists:foreach(fun validate_key_meta/1, maps:values(KeysMeta)).
 
 validate_key_meta(KeyMeta) ->
@@ -75,7 +76,7 @@ validate_retired(#{retired := Retired}) when is_boolean(Retired) ->
 validate_retired(#{retired := _Retired}) ->
     throw({validation_failed, <<"field 'retired' isn't boolean">>}).
 
--spec decode_keyring_meta(encoded_keyring_meta()) -> keyring_meta().
+-spec decode_keyring_meta(encoded_keyring_meta()) -> keyring_meta_diff().
 decode_keyring_meta(#'KeyringMeta'{
     keys_meta = KeysMeta
 }) ->
