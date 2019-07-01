@@ -5,7 +5,6 @@
 %% API
 -export([get_default_keyring_meta/1]).
 -export([update_meta/2]).
--export([validate_meta_diff/1]).
 -export([decode_keyring_meta/1]).
 -export([encode_keyring_meta/1]).
 
@@ -50,19 +49,6 @@ update_meta(#{version := Version, keys := OldKeysMeta} = OldMeta, UpdateMeta) ->
         NewMeta ->
             NewMeta#{version => Version + 1}
     end.
-
--spec validate_meta_diff(keyring_meta_diff()) -> ok.
-validate_meta_diff(#{keys := KeysMeta}) ->
-    lists:foreach(fun validate_key_meta/1, maps:values(KeysMeta)).
-
-validate_key_meta(KeyMeta) ->
-    ok = validate_retired(KeyMeta),
-    ok.
-
-validate_retired(#{retired := Retired}) when is_boolean(Retired) ->
-    ok;
-validate_retired(#{retired := _Retired}) ->
-    throw({validation_failed, <<"field 'retired' isn't boolean">>}).
 
 -spec decode_keyring_meta(encoded_keyring_meta()) -> keyring_meta_diff().
 decode_keyring_meta(#'KeyringMeta'{
