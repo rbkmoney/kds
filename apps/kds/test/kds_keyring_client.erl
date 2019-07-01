@@ -392,7 +392,7 @@ decode_keyring(#'Keyring'{
 }) ->
     #{
         data => #{
-            current_key => CurrentKeyId,
+            max_key_id => CurrentKeyId,
             keys => decode_keys(Keys)
         },
         meta => #{

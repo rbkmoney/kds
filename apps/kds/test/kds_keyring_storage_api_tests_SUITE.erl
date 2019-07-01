@@ -75,7 +75,7 @@ init_check_keyring(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 1, keys := #{0 := #{retired := false}}},
-            data := #{current_key := 0, keys := #{0 := _Key0}}
+            data := #{max_key_id := 0, keys := #{0 := _Key0}}
         },
         get_keyring(C)
     ).
@@ -86,7 +86,7 @@ locked_unlocked_check_keyring(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 1, keys := #{0 := #{retired := false}}},
-            data := #{current_key := 0, keys := #{0 := _Key0}}
+            data := #{max_key_id := 0, keys := #{0 := _Key0}}
         },
         get_keyring(C)
     ),
@@ -99,7 +99,7 @@ locked_unlocked_check_keyring(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 1, keys := #{0 := #{retired := false}}},
-            data := #{current_key := 0, keys := #{0 := _Key0}}
+            data := #{max_key_id := 0, keys := #{0 := _Key0}}
         },
         get_keyring(C)
     ).
@@ -110,7 +110,7 @@ rotation_version_check(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 1, keys := #{0 := #{retired := false}}},
-            data := #{current_key := 0, keys := #{0 := _Key0}}
+            data := #{max_key_id := 0, keys := #{0 := _Key0}}
         },
         get_keyring(C)
     ),
@@ -118,7 +118,7 @@ rotation_version_check(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 2, keys := #{0 := #{retired := false}, 1 := #{retired := false}}},
-            data := #{current_key := 1, keys := #{0 := _Key0, 1 := _Key1}}
+            data := #{max_key_id := 1, keys := #{0 := _Key0, 1 := _Key1}}
         },
         get_keyring(C)
     ).
@@ -129,7 +129,7 @@ update_meta_version_check(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 2, keys := #{0 := #{retired := false}, 1 := #{retired := false}}},
-            data := #{current_key := 1, keys := #{0 := _Key0, 1 := _Key1}}
+            data := #{max_key_id := 1, keys := #{0 := _Key0, 1 := _Key1}}
         },
         get_keyring(C)
     ),
@@ -139,7 +139,7 @@ update_meta_version_check(C) ->
     _ = ?assertMatch(
         #{
             meta := #{version := 3, keys := #{0 := #{retired := true}, 1 := #{retired := false}}},
-            data := #{current_key := 1, keys := #{0 := _Key0, 1 := _Key1}}
+            data := #{max_key_id := 1, keys := #{0 := _Key0, 1 := _Key1}}
         },
         get_keyring(C)
     ).
