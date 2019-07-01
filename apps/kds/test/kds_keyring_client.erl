@@ -387,12 +387,12 @@ decode_encrypted_share(#'EncryptedMasterKeyShare' {
 
 decode_keyring(#'Keyring'{
     version = Version,
-    current_key_id = CurrentKeyId,
+    current_key_id = MaxKeyId,
     keys = Keys
 }) ->
     #{
         data => #{
-            max_key_id => CurrentKeyId,
+            max_key_id => MaxKeyId,
             keys => decode_keys(Keys)
         },
         meta => #{

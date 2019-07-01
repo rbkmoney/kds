@@ -62,16 +62,16 @@ new() ->
     }.
 
 -spec rotate(keyring()) -> keyring().
-rotate(#{data := #{max_key_id := CurrentKeyId, keys := Keys}, meta := #{version := Version, keys := KeysMeta}}) ->
-    NewCurrentKeyId = CurrentKeyId + 1,
+rotate(#{data := #{max_key_id := MaxKeyId, keys := Keys}, meta := #{version := Version, keys := KeysMeta}}) ->
+    NewMaxKeyId = MaxKeyId + 1,
     #{
         data => #{
-            max_key_id => NewCurrentKeyId,
-            keys => Keys#{NewCurrentKeyId => kds_crypto:key()}
+            max_key_id => NewMaxKeyId,
+            keys => Keys#{NewMaxKeyId => kds_crypto:key()}
         },
         meta => #{
             version => Version + 1,
-            keys => KeysMeta#{NewCurrentKeyId => #{retired => false}}
+            keys => KeysMeta#{NewMaxKeyId => #{retired => false}}
         }
     }.
 
@@ -89,9 +89,9 @@ get_keys(#{data := #{keys := Keys}}) ->
     maps:to_list(Keys).
 
 -spec get_current_key(keyring()) -> {key_id(), key()}.
-get_current_key(#{data := #{max_key_id := CurrentKeyId, keys := Keys}}) ->
-    CurrentKey = maps:get(CurrentKeyId, Keys),
-    {CurrentKeyId, CurrentKey}.
+get_current_key(#{data := #{max_key_id := MaxKeyId, keys := Keys}}) ->
+    MaxKey = maps:get(MaxKeyId, Keys),
+    {MaxKeyId, MaxKey}.
 
 %%
 
@@ -121,9 +121,9 @@ decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta}) ->
     end.
 
 -spec marshall(keyring_data()) -> binary().
-marshall(#{max_key_id := CurrentKey, keys := Keys}) ->
+marshall(#{max_key_id := MaxKeyId, keys := Keys}) ->
     Keyring = erlang:term_to_binary(#{
-        max_key_id => CurrentKey,
+        max_key_id => MaxKeyId,
         keys => Keys
     }),
     <<?FORMAT_VERSION/integer, Keyring/binary>>.
