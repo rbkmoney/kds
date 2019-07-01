@@ -189,8 +189,7 @@ handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status});
         {validation_failed, Reason} ->
-            FormattedReason = io_lib:format("validation_failed Reason: ~w", [Reason]),
-            raise(#'InvalidKeyringMeta'{reason = erlang:list_to_binary(FormattedReason)})
+            raise(#'InvalidKeyringMeta'{reason = erlang:atom_to_binary(Reason, utf8)})
     end;
 handle_function_('GetKeyringMeta', [], _Context, _Opts) ->
     KeyringMeta = kds_keyring_manager:get_meta(),
