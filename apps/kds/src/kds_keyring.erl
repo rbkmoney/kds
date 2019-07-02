@@ -35,7 +35,6 @@
 }.
 
 -type keyring_data() :: #{
-    max_key_id := key_id(),
     keys := #{key_id() => key()}
 }.
 
@@ -48,10 +47,10 @@
 new() ->
     #{
         data => #{
-            max_key_id => 0,
             keys => #{0 => kds_crypto:key()}
         },
         meta => #{
+            current_key_id => 0,
             version => 1,
             keys => #{
                 0 => #{
@@ -62,14 +61,15 @@ new() ->
     }.
 
 -spec rotate(keyring()) -> keyring().
-rotate(#{data := #{max_key_id := MaxKeyId, keys := Keys}, meta := #{version := Version, keys := KeysMeta}}) ->
+rotate(#{data := #{keys := Keys}, meta := #{current_key_id := CurrentKeyId, version := Version, keys := KeysMeta}}) ->
+    MaxKeyId = lists:max(maps:keys(Keys)),
     NewMaxKeyId = MaxKeyId + 1,
     #{
         data => #{
-            max_key_id => NewMaxKeyId,
             keys => Keys#{NewMaxKeyId => kds_crypto:key()}
         },
         meta => #{
+            current_key_id => CurrentKeyId,
             version => Version + 1,
             keys => KeysMeta#{NewMaxKeyId => #{retired => false}}
         }
@@ -89,9 +89,9 @@ get_keys(#{data := #{keys := Keys}}) ->
     maps:to_list(Keys).
 
 -spec get_current_key(keyring()) -> {key_id(), key()}.
-get_current_key(#{data := #{max_key_id := MaxKeyId, keys := Keys}}) ->
-    MaxKey = maps:get(MaxKeyId, Keys),
-    {MaxKeyId, MaxKey}.
+get_current_key(#{data := #{keys := Keys}, meta := #{current_key_id := CurrentKeyId}}) ->
+    CurrentKey = maps:get(CurrentKeyId, Keys),
+    {CurrentKeyId, CurrentKey}.
 
 %%
 
@@ -121,21 +121,20 @@ decrypt(MasterKey, #{data := EncryptedKeyringData, meta := KeyringMeta}) ->
     end.
 
 -spec marshall(keyring_data()) -> binary().
-marshall(#{max_key_id := MaxKeyId, keys := Keys}) ->
+marshall(#{keys := Keys}) ->
     Keyring = erlang:term_to_binary(#{
-        max_key_id => MaxKeyId,
         keys => Keys
     }),
-    <<?FORMAT_VERSION/integer, Keyring/binary>>.
+    <<?FORMAT_VERSION:8/integer-unit:4, Keyring/binary>>.
 
 -spec unmarshall(binary()) -> keyring_data().
 unmarshall(<<MaxKeyId, Keys/binary>> = MarshalledKeyring) ->
     KeysSize = erlang:byte_size(Keys),
     case (KeysSize div 33 =:= MaxKeyId) and (KeysSize rem 33 =:= 0) of
         true ->
-            #{max_key_id => MaxKeyId, keys => unmarshall_keys(Keys, #{})};
+            #{keys => unmarshall_keys(Keys, #{})};
         false ->
-            <<1/integer, Keyring/binary>> = MarshalledKeyring,
+            <<1:8/integer-unit:4, Keyring/binary>> = MarshalledKeyring,
             erlang:binary_to_term(Keyring, [safe])
     end.
 

@@ -112,6 +112,7 @@ decode_encrypted_keyring(#{
     <<"format_version">> := 1,
     <<"data">> := KeyringData,
     <<"meta">> := #{
+        <<"current_key_id">> := CurrentKeyId,
         <<"version">> := Version,
         <<"keys">> := KeysMeta
     }
@@ -119,6 +120,7 @@ decode_encrypted_keyring(#{
     #{
         data => KeyringData,
         meta => #{
+            current_key_id => CurrentKeyId,
             version => Version,
             keys => decode_number_key_map(KeysMeta)
         }

@@ -279,7 +279,7 @@ get_state(RootUrl) ->
     {error, {invalid_status, kds_keyring_manager:state()}}.
 update_keyring_meta(KeyringMeta, RootUrl) ->
     try
-        EncodedMeta = kds_keyring_meta:encode_keyring_meta(KeyringMeta),
+        EncodedMeta = kds_keyring_meta:encode_keyring_meta_diff(KeyringMeta),
         kds_woody_client:call(keyring_management, 'UpdateKeyringMeta', [EncodedMeta], RootUrl)
     catch
         #'InvalidKeyringMeta'{reason = Reason} ->
@@ -387,15 +387,15 @@ decode_encrypted_share(#'EncryptedMasterKeyShare' {
 
 decode_keyring(#'Keyring'{
     version = Version,
-    current_key_id = MaxKeyId,
+    current_key_id = CurrentKeyId,
     keys = Keys
 }) ->
     #{
         data => #{
-            max_key_id => MaxKeyId,
             keys => decode_keys(Keys)
         },
         meta => #{
+            current_key_id => CurrentKeyId,
             version => Version,
             keys => decode_keys_meta(Keys)
         }

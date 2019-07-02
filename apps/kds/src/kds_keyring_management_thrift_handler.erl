@@ -179,7 +179,7 @@ handle_function_('GetState', [], _Context, _Opts) ->
 
 handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
     try
-        DecodedKeyringMeta = kds_keyring_meta:decode_keyring_meta(KeyringMeta),
+        DecodedKeyringMeta = kds_keyring_meta:decode_keyring_meta_diff(KeyringMeta),
         kds_keyring_manager:update_meta(DecodedKeyringMeta)
     of
         ok ->

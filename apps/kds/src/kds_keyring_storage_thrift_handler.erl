@@ -30,17 +30,17 @@ handle_function_('GetKeyring', [], _Context, _Opts) ->
 
 encode_keyring(#{
     data := #{
-        max_key_id := MaxKeyId,
         keys := Keys
     },
     meta := #{
+        current_key_id := CurrentKeyId,
         version := Version,
         keys := KeysMeta
     }
 }) ->
     #'Keyring'{
         version = Version,
-        current_key_id = MaxKeyId,
+        current_key_id = CurrentKeyId,
         keys = encode_keys(Keys, KeysMeta)
     }.
 
