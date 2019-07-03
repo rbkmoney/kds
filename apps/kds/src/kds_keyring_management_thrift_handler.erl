@@ -81,6 +81,8 @@ handle_function_('ConfirmUnlock', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'VerificationFailed'{});
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status});
+        {invalid_activity, Activity} ->
+            raise(#'InvalidActivity'{activity = Activity});
         {operation_aborted, Reason} ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
@@ -108,6 +110,8 @@ handle_function_('ConfirmRotate', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'VerificationFailed'{});
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status});
+        {invalid_activity, Activity} ->
+            raise(#'InvalidActivity'{activity = Activity});
         {operation_aborted, Reason} ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
