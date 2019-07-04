@@ -47,11 +47,27 @@ encode_keyring(#{
 encode_keys(Keys, KeysMeta) ->
     maps:fold(
         fun(K, V, Acc) ->
-            #{retired := Retired} = maps:get(K, KeysMeta),
+            #{
+                retired := Retired,
+                security_parameters := #{
+                    scrypt_opts := #{
+                        n := ScryptN,
+                        r := ScryptR,
+                        p := ScryptP
+                    }
+                }
+            } = maps:get(K, KeysMeta),
             Acc#{K => #'Key'{
                 data = V,
                 meta = #'KeyMeta'{
-                    retired = Retired
+                    retired = Retired,
+                    security_parameters = #'SecurityParameters'{
+                        deduplication_hash_opts = #'ScryptOptions'{
+                            n = ScryptN,
+                            r = ScryptR,
+                            p = ScryptP
+                        }
+                    }
                 }
             }}
         end,

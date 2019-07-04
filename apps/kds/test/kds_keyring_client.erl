@@ -412,8 +412,28 @@ decode_keys(Keys) ->
 
 decode_keys_meta(Keys) ->
     maps:fold(
-        fun (K, #'Key'{meta = #'KeyMeta'{retired = Retired}}, Acc) ->
-            Acc#{K => #{retired => Retired}}
+        fun(K,
+            #'Key'{meta = #'KeyMeta'{
+                retired = Retired,
+                security_parameters = #'SecurityParameters'{
+                    deduplication_hash_opts = #'ScryptOptions'{
+                        n = ScryptN,
+                        r = ScryptR,
+                        p = ScryptP
+                    }
+                }
+            }},
+            Acc) ->
+            Acc#{K => #{
+                retired => Retired,
+                security_parametes => #{
+                    scrypt_opts => #{
+                        n => ScryptN,
+                        r => ScryptR,
+                        p => ScryptP
+                    }
+                }
+            }}
         end,
         #{},
         Keys
