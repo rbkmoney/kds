@@ -132,7 +132,7 @@ decode_number_key_map(Map) ->
             #{
                 <<"retired">> := Retired,
                 <<"security_parameters">> := #{
-                    <<"scrypt_opts">> := #{
+                    <<"deduplication_hash_opts">> := #{
                         <<"n">> := ScryptN,
                         <<"r">> := ScryptR,
                         <<"p">> := ScryptP
@@ -144,7 +144,7 @@ decode_number_key_map(Map) ->
                 binary_to_integer(K) => #{
                     retired => Retired,
                     security_parameters => #{
-                        scrypt_opts => #{
+                        deduplication_hash_opts => #{
                             n => ScryptN,
                             r => ScryptR,
                             p => ScryptP

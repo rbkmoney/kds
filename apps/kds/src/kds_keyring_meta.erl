@@ -36,7 +36,7 @@
     retired := boolean()
 }.
 -type security_parameters() :: #{
-    scrypt_opts := #{
+    deduplication_hash_opts := #{
         n := pos_integer(),
         r := pos_integer(),
         p := pos_integer()
@@ -126,7 +126,7 @@ decode_keys_meta(KeysMeta) ->
 
 -spec decode_security_parameters(encoded_security_parameters()) -> security_parameters().
 decode_security_parameters(#'SecurityParameters'{deduplication_hash_opts = HashOpts}) ->
-    #{scrypt_opts => decode_scrypt_opts(HashOpts)}.
+    #{deduplication_hash_opts => decode_scrypt_opts(HashOpts)}.
 
 decode_scrypt_opts(#'ScryptOptions'{n = N, r = R, p = P}) ->
     #{n => N, r => R, p => P}.
@@ -179,7 +179,7 @@ encode_keys_meta(KeysMeta) ->
     ).
 
 -spec encode_security_parameters(security_parameters()) -> encoded_security_parameters().
-encode_security_parameters(#{scrypt_opts := ScryptOpts}) ->
+encode_security_parameters(#{deduplication_hash_opts := ScryptOpts}) ->
     #'SecurityParameters'{deduplication_hash_opts = encode_scrypt_opts(ScryptOpts)}.
 
 encode_scrypt_opts(#{n := N, r := R, p := P}) ->

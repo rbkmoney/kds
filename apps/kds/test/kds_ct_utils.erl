@@ -56,7 +56,7 @@ start_clear(Config) ->
                 ]
             }},
             {new_key_security_parameters, #{
-                scrypt_opts => #{
+                deduplication_hash_opts => #{
                     n => 16384,
                     r => 8,
                     p => 1

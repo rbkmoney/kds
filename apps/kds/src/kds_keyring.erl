@@ -41,7 +41,7 @@
 -define(KEY_BYTESIZE, 32).
 -define(FORMAT_VERSION, 1).
 -define(DEFAULT_SEC_PARAMS, #{
-    scrypt_opts => #{
+    deduplication_hash_opts => #{
         n => 16384,
         r => 8,
         p => 1

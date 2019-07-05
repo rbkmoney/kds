@@ -95,7 +95,7 @@ rotate_check_meta(C) ->
             0 := #{
                 retired := false,
                 security_parameters := #{
-                    scrypt_opts := #{
+                    deduplication_hash_opts := #{
                         n := 16384,
                         r := 8,
                         p := 1
@@ -106,7 +106,7 @@ rotate_check_meta(C) ->
         kds_keyring_client:get_keyring_meta(root_url(C))
     ),
     ok = application:set_env(kds, new_key_security_parameters, #{
-        scrypt_opts => #{
+        deduplication_hash_opts => #{
             n => 16384,
             r => 7,
             p => 1
@@ -118,7 +118,7 @@ rotate_check_meta(C) ->
             0 := #{
                 retired := false,
                 security_parameters := #{
-                    scrypt_opts := #{
+                    deduplication_hash_opts := #{
                         n := 16384,
                         r := 8,
                         p := 1
@@ -128,7 +128,7 @@ rotate_check_meta(C) ->
             1 := #{
                 retired := false,
                 security_parameters := #{
-                    scrypt_opts := #{
+                    deduplication_hash_opts := #{
                         n := 16384,
                         r := 7,
                         p := 1
