@@ -105,7 +105,7 @@ rotate_check_meta(C) ->
         }},
         kds_keyring_client:get_keyring_meta(root_url(C))
     ),
-    ok = application:set_env(kds, security_parameters, #{
+    ok = application:set_env(kds, new_key_security_parameters, #{
         scrypt_opts => #{
             n => 16384,
             r => 7,

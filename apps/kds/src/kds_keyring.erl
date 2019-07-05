@@ -52,7 +52,7 @@
 
 -spec new() -> keyring().
 new() ->
-    SecurityParameters = application:get_env(kds, security_parameters, ?DEFAULT_SEC_PARAMS),
+    SecurityParameters = application:get_env(kds, new_key_security_parameters, ?DEFAULT_SEC_PARAMS),
     #{
         data => #{
             keys => #{0 => kds_crypto:key()}
@@ -72,7 +72,7 @@ new() ->
 -spec rotate(keyring()) -> keyring().
 rotate(#{data := #{keys := Keys}, meta := #{current_key_id := CurrentKeyId, version := Version, keys := KeysMeta}}) ->
     MaxKeyId = lists:max(maps:keys(Keys)),
-    SecurityParameters = application:get_env(kds, security_parameters, ?DEFAULT_SEC_PARAMS),
+    SecurityParameters = application:get_env(kds, new_key_security_parameters, ?DEFAULT_SEC_PARAMS),
     NewMaxKeyId = MaxKeyId + 1,
     #{
         data => #{

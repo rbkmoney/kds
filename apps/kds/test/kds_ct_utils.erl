@@ -55,7 +55,7 @@ start_clear(Config) ->
                     {fail_if_no_peer_cert, true}
                 ]
             }},
-            {security_parameters, #{
+            {new_key_security_parameters, #{
                 scrypt_opts => #{
                     n => 16384,
                     r => 8,
