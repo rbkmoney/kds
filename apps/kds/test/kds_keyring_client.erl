@@ -415,24 +415,12 @@ decode_keys_meta(Keys) ->
         fun(K,
             #'Key'{meta = #'KeyMeta'{
                 retired = Retired,
-                security_parameters = #'SecurityParameters'{
-                    deduplication_hash_opts = #'ScryptOptions'{
-                        n = ScryptN,
-                        r = ScryptR,
-                        p = ScryptP
-                    }
-                }
+                security_parameters = SecurityParameters
             }},
             Acc) ->
             Acc#{K => #{
                 retired => Retired,
-                security_parametes => #{
-                    scrypt_opts => #{
-                        n => ScryptN,
-                        r => ScryptR,
-                        p => ScryptP
-                    }
-                }
+                security_parametes => kds_keyring_meta:decode_security_parameters(SecurityParameters)
             }}
         end,
         #{},

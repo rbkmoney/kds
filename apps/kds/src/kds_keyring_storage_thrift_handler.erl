@@ -49,25 +49,13 @@ encode_keys(Keys, KeysMeta) ->
         fun(K, V, Acc) ->
             #{
                 retired := Retired,
-                security_parameters := #{
-                    scrypt_opts := #{
-                        n := ScryptN,
-                        r := ScryptR,
-                        p := ScryptP
-                    }
-                }
+                security_parameters := SecurityParameters
             } = maps:get(K, KeysMeta),
             Acc#{K => #'Key'{
                 data = V,
                 meta = #'KeyMeta'{
                     retired = Retired,
-                    security_parameters = #'SecurityParameters'{
-                        deduplication_hash_opts = #'ScryptOptions'{
-                            n = ScryptN,
-                            r = ScryptR,
-                            p = ScryptP
-                        }
-                    }
+                    security_parameters = kds_keyring_meta:encode_security_parameters(SecurityParameters)
                 }
             }}
         end,

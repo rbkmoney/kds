@@ -7,8 +7,10 @@
 -export([update_meta/2]).
 -export([decode_keyring_meta_diff/1]).
 -export([decode_keyring_meta/1]).
+-export([decode_security_parameters/1]).
 -export([encode_keyring_meta_diff/1]).
 -export([encode_keyring_meta/1]).
+-export([encode_security_parameters/1]).
 
 -export_type([keyring_meta/0]).
 -export_type([keyring_meta_diff/0]).
@@ -28,20 +30,22 @@
 }.
 -type key_meta() :: #{
     retired := boolean(),
-    security_parameters := #{
-        scrypt_opts := #{
-            n := pos_integer(),
-            r := pos_integer(),
-            p := pos_integer()
-        }
-    }
+    security_parameters := security_parameters()
 }.
 -type key_meta_diff() :: #{
     retired := boolean()
 }.
+-type security_parameters() :: #{
+    scrypt_opts := #{
+        n := pos_integer(),
+        r := pos_integer(),
+        p := pos_integer()
+    }
+}.
 -type key_id() :: kds_keyring:key_id().
 -type encoded_keyring_meta() :: #'KeyringMeta'{}.
 -type encoded_keyring_meta_diff() :: #'KeyringMetaDiff'{}.
+-type encoded_security_parameters() :: #'SecurityParameters'{}.
 
 -spec get_default_keyring_meta(kds_keyring:keyring_data()) -> keyring_meta().
 get_default_keyring_meta(KeyringData) ->
@@ -109,28 +113,23 @@ decode_keys_meta(KeysMeta) ->
         fun(K,
             #'KeyMeta'{
                 retired = Retired,
-                security_parameters = #'SecurityParameters'{
-                    deduplication_hash_opts = #'ScryptOptions'{
-                        n = ScryptN,
-                        r = ScryptR,
-                        p = ScryptP
-                    }
-                }
+                security_parameters = SecurityParameters
             },
             Acc) ->
             Acc#{K => #{
                 retired => Retired,
-                security_parameters => #{
-                    scrypt_opts => #{
-                        n => ScryptN,
-                        r => ScryptR,
-                        p => ScryptP
-                    }
-                }
+                security_parameters => decode_security_parameters(SecurityParameters)
             }}
         end,
         #{},
         KeysMeta).
+
+-spec decode_security_parameters(encoded_security_parameters()) -> security_parameters().
+decode_security_parameters(#'SecurityParameters'{deduplication_hash_opts = HashOpts}) ->
+    #{scrypt_opts => decode_scrypt_opts(HashOpts)}.
+
+decode_scrypt_opts(#'ScryptOptions'{n = N, r = R, p = P}) ->
+    #{n => N, r => R, p => P}.
 
 -spec encode_keyring_meta_diff(keyring_meta_diff()) -> encoded_keyring_meta_diff().
 encode_keyring_meta_diff(KeyringMetaDiff) ->
@@ -167,26 +166,21 @@ encode_keys_meta(KeysMeta) ->
         fun(K,
             #{
                 retired := Retired,
-                security_parameters := #{
-                    scrypt_opts := #{
-                        n := ScryptN,
-                        r := ScryptR,
-                        p := ScryptP
-                    }
-                }
+                security_parameters := SecurityParameters
             },
             Acc) ->
             Acc#{K => #'KeyMeta'{
                 retired = Retired,
-                security_parameters = #'SecurityParameters'{
-                    deduplication_hash_opts = #'ScryptOptions'{
-                        n = ScryptN,
-                        r = ScryptR,
-                        p = ScryptP
-                    }
-                }
+                security_parameters = encode_security_parameters(SecurityParameters)
             }}
         end,
         #{},
         KeysMeta
     ).
+
+-spec encode_security_parameters(security_parameters()) -> encoded_security_parameters().
+encode_security_parameters(#{scrypt_opts := ScryptOpts}) ->
+    #'SecurityParameters'{deduplication_hash_opts = encode_scrypt_opts(ScryptOpts)}.
+
+encode_scrypt_opts(#{n := N, r := R, p := P}) ->
+    #'ScryptOptions'{n = N, r = R, p = P}.
