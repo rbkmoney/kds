@@ -9,6 +9,7 @@
 -export([encrypt_shares_for_shareholders/2]).
 -export([get_shares/1]).
 -export([get_id_map/1]).
+-export([clear_shares/1]).
 -export([validate_shares/2]).
 -export([validate_share_combos/1]).
 
@@ -104,6 +105,11 @@ get_shares(Shares) ->
 
 get_id_map(Shares) ->
     maps:map(fun (_K, {ShareholderId, _Share}) -> ShareholderId end, Shares).
+
+-spec clear_shares(masterkey_shares_map()) -> masterkey_shares_map().
+
+clear_shares(Shares) ->
+    maps:map(fun (_K, {ShareholderId, _Share}) -> {ShareholderId, <<>>} end, Shares).
 
 -spec validate_shares(threshold(), masterkey_shares()) ->
     {ok, masterkey()} | {error, non_matching_masterkey | failed_to_recover}.

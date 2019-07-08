@@ -91,6 +91,7 @@ init([]) ->
 
 handle_event({call, From}, initialize, uninitialized, _Data) ->
     TimerRef = erlang:start_timer(get_timeout(), self(), lifetime_expired),
+    _ = logger:info("kds_keyring_rotator changed state to validation"),
     {next_state,
         validation,
         #data{timer = TimerRef}, {reply, From, ok}};
@@ -103,7 +104,11 @@ handle_event({call, From}, {confirm, ShareholderId, Share, EncryptedOldKeyring, 
             _ = erlang:cancel_timer(TimerRef),
             ListShares = kds_keysharing:get_shares(AllShares),
             Result = update_keyring(OldKeyring, EncryptedOldKeyring, ListShares),
-            {next_state, uninitialized, #data{}, {reply, From, Result}};
+            _ = logger:info("kds_keyring_rotator changed state to uninitialized"),
+            {next_state,
+                uninitialized,
+                #data{shares = kds_keysharing:clear_shares(Shares)},
+                {reply, From, Result}};
         More ->
             {keep_state,
                 StateData#data{shares = More},
@@ -125,8 +130,10 @@ handle_event({call, From}, get_status, State, #data{timer = TimerRef, shares = V
     {keep_state_and_data, {reply, From, Status}};
 handle_event({call, From}, cancel, _State, #data{timer = TimerRef}) ->
     ok = cancel_timer(TimerRef),
+    _ = logger:info("kds_keyring_rotator changed state to uninitialized"),
     {next_state, uninitialized, #data{}, {reply, From, ok}};
 handle_event(info, {timeout, _TimerRef, lifetime_expired}, _State, _Data) ->
+    _ = logger:info("kds_keyring_rotator changed state to uninitialized"),
     {next_state, uninitialized, #data{}, []};
 
 %% InvalidActivity events
