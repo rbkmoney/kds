@@ -129,7 +129,7 @@ handle_event({call, From}, {validate, ShareholderId, Share}, validation,
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Num ->
             _ = erlang:cancel_timer(TimerRef),
-            Result = validate(Threshold, Shares, Keyring),
+            Result = validate(Threshold, AllShares, Keyring),
             _ = logger:info("kds_keyring_initializer changed state to uninitialized"),
             {next_state,
                 uninitialized,

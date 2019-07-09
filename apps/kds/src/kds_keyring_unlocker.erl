@@ -102,7 +102,7 @@ handle_event({call, From}, {confirm, ShareholderId, Share, LockedKeyring}, valid
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Threshold ->
             _ = erlang:cancel_timer(TimerRef),
-            Result = unlock(LockedKeyring, Shares),
+            Result = unlock(LockedKeyring, AllShares),
             _ = logger:info("kds_keyring_unlocker changed state to uninitialized"),
             {next_state,
                 uninitialized,
