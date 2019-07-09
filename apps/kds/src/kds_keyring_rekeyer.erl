@@ -31,7 +31,8 @@
 
 -type shareholder_id() :: kds_shareholder:shareholder_id().
 -type masterkey_share() :: kds_keysharing:masterkey_share().
--type masterkey_shares() :: [masterkey_share()].
+-type masterkey_shares() :: kds_keysharing:masterkey_shares_map().
+-type masterkey_shares_list() :: kds_keysharing:masterkey_shares().
 -type encrypted_master_key_shares() :: kds_keysharing:encrypted_master_key_shares().
 
 -type data() :: #data{}.
@@ -189,8 +190,7 @@ handle_event({call, From}, {validate, ShareholderId, Share, Keyring}, validation
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= ShareholdersCount ->
             _Time = erlang:cancel_timer(TimerRef),
-            ListShares = kds_keysharing:get_shares(AllShares),
-            Result = validate_operation(Threshold, ListShares, ValidationKeyring, Keyring),
+            Result = validate_operation(Threshold, Shares, ConfirmationShares, ValidationKeyring, Keyring),
             _ = logger:info("kds_keyring_rekeyer changed state to uninitialized"),
             {next_state,
                 uninitialized,
@@ -267,7 +267,7 @@ get_lifetime(TimerRef) ->
             erlang:read_timer(TimerRef) div 1000
     end.
 
--spec confirm_operation(encrypted_keyring(), masterkey_shares()) -> ok | {error, confirm_errors()}.
+-spec confirm_operation(encrypted_keyring(), masterkey_shares_list()) -> ok | {error, confirm_errors()}.
 
 confirm_operation(EncryptedOldKeyring, AllShares) ->
     case kds_keysharing:recover(AllShares) of
@@ -282,15 +282,20 @@ confirm_operation(EncryptedOldKeyring, AllShares) ->
             {error, {operation_aborted, failed_to_recover}}
     end.
 
--spec validate_operation(threshold(), masterkey_shares(), encrypted_keyring(), keyring()) ->
+-spec validate_operation(threshold(), masterkey_shares(), masterkey_shares(), encrypted_keyring(), keyring()) ->
     {ok, {done, encrypted_keyring()}} | {error, validate_errors()}.
 
-validate_operation(Threshold, Shares, ValidationKeyring, Keyring) ->
-    case kds_keysharing:validate_shares(Threshold, Shares) of
+validate_operation(Threshold, ValidationShares, ConfirmationShares, ValidationKeyring, Keyring) ->
+    ValidationListShares = kds_keysharing:get_shares(ValidationShares),
+    case kds_keysharing:validate_shares(Threshold, ValidationListShares) of
         {ok, MasterKey} ->
             case kds_keyring:decrypt(MasterKey, ValidationKeyring) of
                 {ok, _DecryptedKeyring} ->
                     EncryptedKeyring = kds_keyring:encrypt(MasterKey, Keyring),
+                    ValidationShareholdersIds = kds_keysharing:get_shareholder_ids(ValidationShares),
+                    ConfirmationShareholdersIds = kds_keysharing:get_shareholder_ids(ConfirmationShares),
+                    _ = logger:info("Rekey finished with confrimation shares from ~p~nand validation shares from ~p",
+                        [ValidationShareholdersIds, ConfirmationShareholdersIds]),
                     {ok, {done, EncryptedKeyring}};
                 {error, decryption_failed} ->
                     {error, {operation_aborted, failed_to_decrypt_keyring}}

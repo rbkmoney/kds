@@ -29,7 +29,7 @@
 -type shareholder_id() :: kds_shareholder:shareholder_id().
 
 -type masterkey_share() :: kds_keysharing:masterkey_share().
--type masterkey_shares() :: [masterkey_share()].
+-type masterkey_shares_map() :: kds_keysharing:masterkey_shares_map().
 
 -type encrypted_master_key_shares() :: kds_keysharing:encrypted_master_key_shares().
 
@@ -129,8 +129,7 @@ handle_event({call, From}, {validate, ShareholderId, Share}, validation,
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Num ->
             _ = erlang:cancel_timer(TimerRef),
-            ListShares = kds_keysharing:get_shares(AllShares),
-            Result = validate(Threshold, ListShares, Keyring),
+            Result = validate(Threshold, Shares, Keyring),
             _ = logger:info("kds_keyring_initializer changed state to uninitialized"),
             {next_state,
                 uninitialized,
@@ -193,14 +192,17 @@ get_lifetime(TimerRef) ->
             erlang:read_timer(TimerRef) div 1000
     end.
 
--spec validate(threshold(), masterkey_shares(), encrypted_keyring()) ->
+-spec validate(threshold(), masterkey_shares_map(), encrypted_keyring()) ->
     {ok, {done, {encrypted_keyring(), decrypted_keyring()}}} | {error, validate_errors()}.
 
 validate(Threshold, Shares, EncryptedKeyring) ->
-    case kds_keysharing:validate_shares(Threshold, Shares) of
+    ListShares = kds_keysharing:get_shares(Shares),
+    case kds_keysharing:validate_shares(Threshold, ListShares) of
         {ok, MasterKey} ->
             case kds_keyring:decrypt(MasterKey, EncryptedKeyring) of
                 {ok, DecryptedKeyring} ->
+                    InitializersIds = kds_keysharing:get_shareholder_ids(Shares),
+                    _ = logger:info("Initialization finished with shares from ~p", [InitializersIds]),
                     {ok, {done, {EncryptedKeyring, DecryptedKeyring}}};
                 {error, decryption_failed} ->
                     {error, {operation_aborted, failed_to_decrypt_keyring}}

@@ -35,7 +35,7 @@
 
 -type shareholder_id() :: kds_shareholder:shareholder_id().
 -type masterkey_share() :: kds_keysharing:masterkey_share().
--type masterkey_shares() :: kds_keysharing:masterkey_shares().
+-type masterkey_shares_map() :: kds_keysharing:masterkey_shares_map().
 -type locked_keyring() :: kds_keyring:encrypted_keyring().
 -type keyring() :: kds_keyring:keyring().
 -type unlock_errors() ::
@@ -102,8 +102,7 @@ handle_event({call, From}, {confirm, ShareholderId, Share, LockedKeyring}, valid
     case Shares#{X => {ShareholderId, Share}} of
         AllShares when map_size(AllShares) =:= Threshold ->
             _ = erlang:cancel_timer(TimerRef),
-            ListShares = kds_keysharing:get_shares(AllShares),
-            Result = unlock(LockedKeyring, ListShares),
+            Result = unlock(LockedKeyring, Shares),
             _ = logger:info("kds_keyring_unlocker changed state to uninitialized"),
             {next_state,
                 uninitialized,
@@ -164,14 +163,17 @@ get_lifetime(TimerRef) ->
             erlang:read_timer(TimerRef) div 1000
     end.
 
--spec unlock(locked_keyring(), masterkey_shares()) ->
+-spec unlock(locked_keyring(), masterkey_shares_map()) ->
     {ok, {done, keyring()}} | {error, {operation_aborted, unlock_errors()}}.
 
 unlock(LockedKeyring, AllShares) ->
-    case kds_keysharing:recover(AllShares) of
+    ListShares = kds_keysharing:get_shares(AllShares),
+    case kds_keysharing:recover(ListShares) of
         {ok, MasterKey} ->
             case kds_keyring:decrypt(MasterKey, LockedKeyring) of
                 {ok, UnlockedKeyring} ->
+                    UnlockersIds = kds_keysharing:get_shareholder_ids(AllShares),
+                    _ = logger:info("Unlock finished with shares from ~p", [UnlockersIds]),
                     {ok, {done, UnlockedKeyring}};
                 {error, decryption_failed} ->
                     {error, {operation_aborted, wrong_masterkey}}

@@ -8,6 +8,7 @@
 -export([decode_share/1]).
 -export([encrypt_shares_for_shareholders/2]).
 -export([get_shares/1]).
+-export([get_shareholder_ids/1]).
 -export([get_id_map/1]).
 -export([clear_shares/1]).
 -export([validate_shares/2]).
@@ -15,6 +16,7 @@
 
 -export_type([masterkey_share/0]).
 -export_type([masterkey_shares/0]).
+-export_type([masterkey_shares_map/0]).
 -export_type([signed_masterkey_share/0]).
 -export_type([encrypted_master_key_share/0]).
 -export_type([encrypted_master_key_shares/0]).
@@ -100,6 +102,11 @@ encrypt_share_for_shareholder({Share, #{id := Id, owner := Owner} = Shareholder}
 
 get_shares(Shares) ->
     lists:map(fun ({_ShareholderId, Share}) -> Share end, maps:values(Shares)).
+
+-spec get_shareholder_ids(masterkey_shares_map()) -> [shareholder_id()].
+
+get_shareholder_ids(Shares) ->
+    lists:map(fun ({ShareholderId, _Share}) -> ShareholderId end, maps:values(Shares)).
 
 -spec get_id_map(masterkey_shares_map()) -> #{share_id() => shareholder_id()}.
 
