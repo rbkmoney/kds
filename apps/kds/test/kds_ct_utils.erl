@@ -34,8 +34,28 @@ start_clear(Config) ->
     ServerCertFile = filename:join(config(data_dir, Config), "server.pem"),
     ClientCertFile = filename:join(config(data_dir, Config), "client.pem"),
     Apps =
+        genlib_app:start_application_with(kernel, [
+            {logger_sasl_compatible, false},
+            {logger_level, error},
+            {logger, [
+                {handler, default, logger_std_h, #{
+                    formatter => {logger_logstash_formatter, #{
+                        message_redaction_regex_list => [
+                            "[0-9]{12,19}", %% pan
+                            "[0-9]{2}.[0-9]{2,4}", %% expiration date
+                            "[0-9]{3,4}" %% cvv
+                        ]
+                    }}
+                }}
+            ]}
+        ]) ++
         genlib_app:start_application_with(scoper, [
             {storage, scoper_storage_logger}
+        ]) ++
+        genlib_app:start_application_with(os_mon, [
+            {start_disksup, false},
+            {start_memsup, false},
+            {start_cpu_sup, false}
         ]) ++
         genlib_app:start_application_with(kds, [
             {ip, IP},
