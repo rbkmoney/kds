@@ -22,7 +22,6 @@ handle_function(OperationID, Args, Context, Opts) ->
     ).
 
 handle_function_('StartInit', [Threshold], _Context, _Opts) ->
-    _ = logger:info("StartInit is called with Threshold = ~w", [Threshold]),
     try kds_keyring_manager:initialize(Threshold) of
         EncryptedMasterKeyShares ->
             {ok, encode_encrypted_shares(EncryptedMasterKeyShares)}
@@ -50,13 +49,11 @@ handle_function_('ValidateInit', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
 handle_function_('CancelInit', [], _Context, _Opts) ->
-    _ = logger:info("CancelInit is called"),
     try {ok, kds_keyring_manager:cancel_init()} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status})
     end;
 handle_function_('Lock', [], _Context, _Opts) ->
-    _ = logger:info("Lock is called"),
     try {ok, kds_keyring_manager:lock()} catch
         {invalid_status, locked} ->
             {ok, ok};
@@ -64,7 +61,6 @@ handle_function_('Lock', [], _Context, _Opts) ->
             raise(#'InvalidStatus'{status = Status})
     end;
 handle_function_('StartUnlock', [], _Context, _Opts) ->
-    _ = logger:info("StartUnlock is called"),
     try {ok, kds_keyring_manager:start_unlock()} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status});
@@ -87,13 +83,11 @@ handle_function_('ConfirmUnlock', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
 handle_function_('CancelUnlock', [], _Context, _Opts) ->
-    _ = logger:info("CancelUnlock is called"),
     try {ok, kds_keyring_manager:cancel_unlock()} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status})
     end;
 handle_function_('StartRotate', [], _Context, _Opts) ->
-    _ = logger:info("StartRotate is called"),
     try {ok, kds_keyring_manager:start_rotate()} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status});
@@ -116,13 +110,11 @@ handle_function_('ConfirmRotate', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
 handle_function_('CancelRotate', [], _Context, _Opts) ->
-    _ = logger:info("CancelRotate is called"),
     try {ok, kds_keyring_manager:cancel_rotate()} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status})
     end;
 handle_function_('StartRekey', [Threshold], _Context, _Opts) ->
-    _ = logger:info("StartRekey is called with Threshold = ~w", [Threshold]),
     try {ok, kds_keyring_manager:start_rekey(Threshold)} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status});
@@ -147,7 +139,6 @@ handle_function_('ConfirmRekey', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
 handle_function_('StartRekeyValidation', [], _Context, _Opts) ->
-    _ = logger:info("StartRekeyValidation is called"),
     try kds_keyring_manager:start_validate_rekey() of
         EncryptedMasterKeyShares ->
             {ok, encode_encrypted_shares(EncryptedMasterKeyShares)}
@@ -173,21 +164,18 @@ handle_function_('ValidateRekey', [ShareholderId, Share], _Context, _Opts) ->
             raise(#'OperationAborted'{reason = atom_to_binary(Reason, utf8)})
     end;
 handle_function_('CancelRekey', [], _Context, _Opts) ->
-    _ = logger:info("CancelRekey is called"),
     try {ok, kds_keyring_manager:cancel_rekey()} catch
         {invalid_status, Status} ->
             raise(#'InvalidStatus'{status = Status})
     end;
 
 handle_function_('GetState', [], _Context, _Opts) ->
-    _ = logger:info("GetState is called"),
     case kds_keyring_manager:get_status() of
         Status ->
             {ok, encode_state(Status)}
     end;
 
 handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
-    _ = logger:info("UpdateKeyringMeta is called with KeyringMeta = ~p", [KeyringMeta]),
     try
         DecodedKeyringMeta = kds_keyring_meta:decode_keyring_meta_diff(KeyringMeta),
         kds_keyring_manager:update_meta(DecodedKeyringMeta)
@@ -201,7 +189,6 @@ handle_function_('UpdateKeyringMeta', [KeyringMeta], _Context, _Opts) ->
             raise(#'InvalidKeyringMeta'{reason = erlang:atom_to_binary(Reason, utf8)})
     end;
 handle_function_('GetKeyringMeta', [], _Context, _Opts) ->
-    _ = logger:info("GetKeyringMeta is called"),
     KeyringMeta = kds_keyring_manager:get_meta(),
     EncodedKeyringMeta = kds_keyring_meta:encode_keyring_meta(KeyringMeta),
     {ok, EncodedKeyringMeta}.
