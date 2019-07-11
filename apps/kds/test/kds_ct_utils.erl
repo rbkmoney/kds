@@ -35,15 +35,16 @@ start_clear(Config) ->
     ClientCertFile = filename:join(config(data_dir, Config), "client.pem"),
     Apps =
         genlib_app:start_application_with(kernel, [
-            {logger_sasl_compatible, false},
-            {logger_level, error},
+            {logger_sasl_compatible, true},
+            {logger_level, debug},
             {logger, [
                 {handler, default, logger_std_h, #{
                     formatter => {logger_logstash_formatter, #{
                         message_redaction_regex_list => [
                             "[0-9]{12,19}", %% pan
                             "[0-9]{2}.[0-9]{2,4}", %% expiration date
-                            "[0-9]{3,4}" %% cvv
+                            "[0-9]{3,4}", %% cvv
+                            "^eyJ([a-zA-Z0-9_-]*.?){4,6}"
                         ]
                     }}
                 }}
