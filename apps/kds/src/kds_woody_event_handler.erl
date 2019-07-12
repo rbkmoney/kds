@@ -34,10 +34,14 @@ filter_meta(RawMeta) ->
 
 filter_result(Result) ->
     case Result of
-        #{result := [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares} ->
+        [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares ->
             filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
         {ok, [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares} ->
             filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
+        #'Keyring'{keys = Keys} = Keyring ->
+            Keyring#'Keyring'{keys = filter_keys(Keys)};
+        {ok, #'Keyring'{keys = Keys} = Keyring} ->
+            Keyring#'Keyring'{keys = filter_keys(Keys)};
         _ ->
             Result
     end.
@@ -56,3 +60,6 @@ filter_encrypted_master_key_shares(EncryptedMasterKeyShares) ->
             EncryptedMasterKeyShare#'EncryptedMasterKeyShare'{encrypted_share = <<"***">>}
         end,
         EncryptedMasterKeyShares).
+
+filter_keys(Keys) ->
+    maps:map(fun (_K, #'Key'{} = Key) -> Key#'Key'{data = <<"***">>} end, Keys).
