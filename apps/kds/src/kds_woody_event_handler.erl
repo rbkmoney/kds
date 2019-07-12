@@ -32,34 +32,35 @@ filter_meta(RawMeta) ->
             RawMeta
     end.
 
-filter_result(Result) ->
-    case Result of
-        [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares ->
-            filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
-        {ok, [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares} ->
-            filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
-        #'Keyring'{keys = Keys} = Keyring ->
-            Keyring#'Keyring'{keys = filter_keys(Keys)};
-        {ok, #'Keyring'{keys = Keys} = Keyring} ->
-            Keyring#'Keyring'{keys = filter_keys(Keys)};
-        _ ->
-            Result
-    end.
+filter_result({ok, Result}) -> {ok, filter(Result)};
+filter_result({exception, Exception}) -> {exception, filter(Exception)};
+filter_result(Result) -> filter(Result).
 
-filter_args(Args) ->
-    case Args of
-        [#'SignedMasterKeyShare'{} = SignedShare] ->
-            [SignedShare#'SignedMasterKeyShare'{signed_share = <<"***">>}];
-        _ ->
-            Args
-    end.
+filter_args(Args) -> filter(Args).
 
-filter_encrypted_master_key_shares(EncryptedMasterKeyShares) ->
-    lists:map(
-        fun (EncryptedMasterKeyShare) ->
-            EncryptedMasterKeyShare#'EncryptedMasterKeyShare'{encrypted_share = <<"***">>}
-        end,
-        EncryptedMasterKeyShares).
+filter(L) when is_list(L) -> [filter(E) || E <- L];
+
+filter(#'EncryptedMasterKeyShare'{} = EncryptedMasterKeyShare) ->
+    EncryptedMasterKeyShare#'EncryptedMasterKeyShare'{encrypted_share = <<"***">>};
+filter(#'SignedMasterKeyShare'{} = SignedShare) ->
+    SignedShare#'SignedMasterKeyShare'{signed_share = <<"***">>};
+filter(#'Keyring'{keys = Keys} = Keyring) ->
+    Keyring#'Keyring'{keys = filter_keys(Keys)};
+
+filter(V) when is_integer(V) -> V;
+filter(ok) -> ok;
+filter({success, #'Success'{}} = V) -> V;
+filter({more_keys_needed, D} = V) when is_integer(D) -> V;
+filter(#'KeyringState'{} = V) -> V;
+filter(#'KeyringMeta'{} = V) -> V;
+filter(#'KeyringMetaDiff'{} = V) -> V;
+
+filter(#'InvalidStatus'{} = V) -> V;
+filter(#'InvalidActivity'{} = V) -> V;
+filter(#'InvalidKeyringMeta'{} = V) -> V;
+filter(#'InvalidArguments'{} = V) -> V;
+filter(#'VerificationFailed'{} = V) -> V;
+filter(#'OperationAborted'{} = V) -> V.
 
 filter_keys(Keys) ->
     maps:map(fun (_K, #'Key'{} = Key) -> Key#'Key'{data = <<"***">>} end, Keys).
