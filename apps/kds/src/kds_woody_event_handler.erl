@@ -39,13 +39,16 @@ filter_result(Result) -> filter(Result).
 filter_args(Args) -> filter(Args).
 
 filter(L) when is_list(L) -> [filter(E) || E <- L];
+filter(M) when is_map(M) -> maps:map(fun (_K, V) -> filter(V) end, M);
 
 filter(#'EncryptedMasterKeyShare'{} = EncryptedMasterKeyShare) ->
     EncryptedMasterKeyShare#'EncryptedMasterKeyShare'{encrypted_share = <<"***">>};
 filter(#'SignedMasterKeyShare'{} = SignedShare) ->
     SignedShare#'SignedMasterKeyShare'{signed_share = <<"***">>};
 filter(#'Keyring'{keys = Keys} = Keyring) ->
-    Keyring#'Keyring'{keys = filter_keys(Keys)};
+    Keyring#'Keyring'{keys = filter(Keys)};
+filter(#'Key'{} = Key) ->
+    Key#'Key'{data = <<"***">>};
 
 filter(V) when is_integer(V) -> V;
 filter(ok) -> ok;
@@ -61,6 +64,3 @@ filter(#'InvalidKeyringMeta'{} = V) -> V;
 filter(#'InvalidArguments'{} = V) -> V;
 filter(#'VerificationFailed'{} = V) -> V;
 filter(#'OperationAborted'{} = V) -> V.
-
-filter_keys(Keys) ->
-    maps:map(fun (_K, #'Key'{} = Key) -> Key#'Key'{data = <<"***">>} end, Keys).
