@@ -57,7 +57,8 @@ start_init(Threshold, RootUrl) ->
     {error, verification_failed} |
     {error, {invalid_arguments, binary()}}.
 validate_init(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_management, 'ValidateInit', [ShareholderId, Share], RootUrl) of
+    SignedShare = encode_signed_share(ShareholderId, Share),
+    try kds_woody_client:call(keyring_management, 'ValidateInit', [SignedShare], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -104,7 +105,8 @@ start_unlock(RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 confirm_unlock(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_management, 'ConfirmUnlock', [ShareholderId, Share], RootUrl) of
+    SignedShare = encode_signed_share(ShareholderId, Share),
+    try kds_woody_client:call(keyring_management, 'ConfirmUnlock', [SignedShare], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -157,7 +159,8 @@ start_rotate(RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 confirm_rotate(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_management, 'ConfirmRotate', [ShareholderId, Share], RootUrl) of
+    SignedShare = encode_signed_share(ShareholderId, Share),
+    try kds_woody_client:call(keyring_management, 'ConfirmRotate', [SignedShare], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -204,7 +207,8 @@ start_rekey(Threshold, RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 confirm_rekey(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_management, 'ConfirmRekey', [ShareholderId, Share], RootUrl) of
+    SignedShare = encode_signed_share(ShareholderId, Share),
+    try kds_woody_client:call(keyring_management, 'ConfirmRekey', [SignedShare], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -242,7 +246,8 @@ start_rekey_validation(RootUrl) ->
     {error, verification_failed} |
     {error, {operation_aborted, binary()}}.
 validate_rekey(ShareholderId, Share, RootUrl) ->
-    try kds_woody_client:call(keyring_management, 'ValidateRekey', [ShareholderId, Share], RootUrl) of
+    SignedShare = encode_signed_share(ShareholderId, Share),
+    try kds_woody_client:call(keyring_management, 'ValidateRekey', [SignedShare], RootUrl) of
         {success, #'Success'{}} ->
             ok;
         {more_keys_needed, More} ->
@@ -311,6 +316,12 @@ get_keyring(RootUrl, SSLOptions) ->
         #'InvalidStatus'{status = Status} ->
             {error, {invalid_status, Status}}
     end.
+
+encode_signed_share(ShareholderId, Share) ->
+    #'SignedMasterKeyShare'{
+        id = ShareholderId,
+        signed_share = Share
+    }.
 
 decode_state(#'KeyringState'{
     status = Status,

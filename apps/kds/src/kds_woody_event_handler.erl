@@ -24,14 +24,30 @@ handle_event(Event, RpcID, RawMeta, Opts) ->
 
 filter_meta(RawMeta) ->
     case RawMeta of
-        #{result := {ok, [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares}} ->
-            filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
-        #{result := [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares} ->
-            filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
-        #{args := [ShareholderId, SignedShare]} when is_bitstring(SignedShare) ->
-            RawMeta#{args => [ShareholderId, filter_jose(SignedShare)]};
+        #{result := Result} ->
+            RawMeta#{result => filter_result(Result)};
+        #{args := Args} ->
+            RawMeta#{args => filter_args(Args)};
         _ ->
             RawMeta
+    end.
+
+filter_result(Result) ->
+    case Result of
+        #{result := [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares} ->
+            filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
+        {ok, [#'EncryptedMasterKeyShare'{} | _Rest] = EncryptedMasterKeyShares} ->
+            filter_encrypted_master_key_shares(EncryptedMasterKeyShares);
+        _ ->
+            Result
+    end.
+
+filter_args(Args) ->
+    case Args of
+        [#'SignedMasterKeyShare'{} = SignedShare] ->
+            [SignedShare#'SignedMasterKeyShare'{signed_share = <<"***">>}];
+        _ ->
+            Args
     end.
 
 filter_encrypted_master_key_shares(EncryptedMasterKeyShares) ->
@@ -40,6 +56,3 @@ filter_encrypted_master_key_shares(EncryptedMasterKeyShares) ->
             EncryptedMasterKeyShare#'EncryptedMasterKeyShare'{encrypted_share = <<"***">>}
         end,
         EncryptedMasterKeyShares).
-
-filter_jose(Str) ->
-    re:replace(Str, "^eyJ([a-zA-Z0-9_-]*.?){4,6}", <<"***">>).

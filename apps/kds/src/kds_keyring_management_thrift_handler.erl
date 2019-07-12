@@ -33,7 +33,8 @@ handle_function_('StartInit', [Threshold], _Context, _Opts) ->
         invalid_args ->
             raise(#'InvalidArguments'{})
     end;
-handle_function_('ValidateInit', [ShareholderId, Share], _Context, _Opts) ->
+handle_function_('ValidateInit', [SignedShare], _Context, _Opts) ->
+    {ShareholderId, Share} = decode_signed_share(SignedShare),
     VerifiedShare = verify_signed_share(ShareholderId, Share, 'ValidateInit'),
     try kds_keyring_manager:validate_init(ShareholderId, VerifiedShare) of
         {more, More} ->
@@ -67,7 +68,8 @@ handle_function_('StartUnlock', [], _Context, _Opts) ->
         {invalid_activity, Activity} ->
             raise(#'InvalidActivity'{activity = Activity})
     end;
-handle_function_('ConfirmUnlock', [ShareholderId, Share], _Context, _Opts) ->
+handle_function_('ConfirmUnlock', [SignedShare], _Context, _Opts) ->
+    {ShareholderId, Share} = decode_signed_share(SignedShare),
     VerifiedShare = verify_signed_share(ShareholderId, Share, 'ConfirmUnlock'),
     try kds_keyring_manager:confirm_unlock(ShareholderId, VerifiedShare) of
         {more, More} ->
@@ -94,7 +96,8 @@ handle_function_('StartRotate', [], _Context, _Opts) ->
         {invalid_activity, Activity} ->
             raise(#'InvalidActivity'{activity = Activity})
     end;
-handle_function_('ConfirmRotate', [ShareholderId, Share], _Context, _Opts) ->
+handle_function_('ConfirmRotate', [SignedShare], _Context, _Opts) ->
+    {ShareholderId, Share} = decode_signed_share(SignedShare),
     VerifiedShare = verify_signed_share(ShareholderId, Share, 'ConfirmRotate'),
     try kds_keyring_manager:confirm_rotate(ShareholderId, VerifiedShare) of
         {more, More} ->
@@ -123,7 +126,8 @@ handle_function_('StartRekey', [Threshold], _Context, _Opts) ->
         invalid_args ->
             raise(#'InvalidArguments'{})
     end;
-handle_function_('ConfirmRekey', [ShareholderId, Share], _Context, _Opts) ->
+handle_function_('ConfirmRekey', [SignedShare], _Context, _Opts) ->
+    {ShareholderId, Share} = decode_signed_share(SignedShare),
     VerifiedShare = verify_signed_share(ShareholderId, Share, 'ConfirmRekey'),
     try kds_keyring_manager:confirm_rekey(ShareholderId, VerifiedShare) of
         {more, More} ->
@@ -148,7 +152,8 @@ handle_function_('StartRekeyValidation', [], _Context, _Opts) ->
         {invalid_activity, Activity} ->
             raise(#'InvalidActivity'{activity = Activity})
     end;
-handle_function_('ValidateRekey', [ShareholderId, Share], _Context, _Opts) ->
+handle_function_('ValidateRekey', [SignedShare], _Context, _Opts) ->
+    {ShareholderId, Share} = decode_signed_share(SignedShare),
     VerifiedShare = verify_signed_share(ShareholderId, Share, 'ValidateRekey'),
     try kds_keyring_manager:validate_rekey(ShareholderId, VerifiedShare) of
         {more, More} ->
@@ -287,6 +292,12 @@ encode_state(#{
             }
         }
     }.
+
+decode_signed_share(#'SignedMasterKeyShare'{
+    id = ShareholderId,
+    signed_share = Share
+}) ->
+    {ShareholderId, Share}.
 
 -spec raise(_) -> no_return().
 raise(Exception) ->
