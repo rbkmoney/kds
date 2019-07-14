@@ -3,6 +3,7 @@
 -behaviour(woody_event_handler).
 
 -include_lib("cds_proto/include/cds_proto_keyring_thrift.hrl").
+-include_lib("woody/src/woody_defs.hrl").
 
 %% woody_event_handler behaviour callbacks
 -export([handle_event/4]).
@@ -18,6 +19,8 @@
     Meta  :: woody_event_handler:event_meta(),
     Opts  :: woody:options().
 
+handle_event(?EV_INTERNAL_ERROR, RpcID, RawMeta, Opts) ->
+    scoper_woody_event_handler:handle_event(?EV_INTERNAL_ERROR, RpcID, RawMeta, Opts);
 handle_event(Event, RpcID, RawMeta, Opts) ->
     FilteredMeta = filter_meta(RawMeta),
     scoper_woody_event_handler:handle_event(Event, RpcID, FilteredMeta, Opts).
