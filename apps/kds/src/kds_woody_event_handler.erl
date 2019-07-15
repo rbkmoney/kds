@@ -36,6 +36,7 @@ filter_meta(RawMeta) ->
     end.
 
 filter_result({ok, Result}) -> {ok, filter(Result)};
+filter_result({system, SystemError}) -> {system, filter(SystemError)};
 filter_result({exception, Exception}) -> {exception, filter(Exception)};
 filter_result(Result) -> filter(Result).
 
@@ -43,6 +44,13 @@ filter_args(Args) -> filter(Args).
 
 filter(L) when is_list(L) -> [filter(E) || E <- L];
 filter(M) when is_map(M) -> maps:map(fun (_K, V) -> filter(V) end, M);
+
+filter({internal, resource_unavailable, Details} = V) when is_binary(Details) -> V;
+filter({internal, result_unexpected, Details} = V) when is_binary(Details) -> V;
+filter({internal, result_unknown, Details} = V) when is_binary(Details) -> V;
+filter({external, resource_unavailable, Details} = V) when is_binary(Details) -> V;
+filter({external, result_unexpected, Details} = V) when is_binary(Details) -> V;
+filter({external, result_unknown, Details} = V) when is_binary(Details) -> V;
 
 filter(#'cds_EncryptedMasterKeyShare'{} = EncryptedMasterKeyShare) ->
     EncryptedMasterKeyShare#'cds_EncryptedMasterKeyShare'{encrypted_share = <<"***">>};
