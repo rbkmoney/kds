@@ -44,7 +44,7 @@ start_clear(Config) ->
                             "[0-9]{12,19}", %% pan
                             "[0-9]{2}.[0-9]{2,4}", %% expiration date
                             "[0-9]{3,4}", %% cvv
-                            "^eyJ([a-zA-Z0-9_-]*.?){1,6}" %% JWS and JWE compact representation
+                            "^ey[JI]([a-zA-Z0-9_-]*.?){1,6}" %% JWS and JWE compact representation
                         ]
                     }}
                 }}
