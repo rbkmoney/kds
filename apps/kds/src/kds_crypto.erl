@@ -58,8 +58,8 @@ encrypt(Key, Plain) ->
     try
         {Cipher, Tag} = crypto:block_encrypt(?CIPHER_TYPE, Key, IV, {AAD, Plain}),
         marshall_cedf(#cedf{iv = IV, aad = AAD, cipher = Cipher, tag = Tag})
-    catch Class:Reason ->
-        _ = logger:error("encryption failed with ~p ~p", [Class, Reason]),
+    catch Class:Reason:Stacktrace ->
+        _ = logger:error("encryption failed with ~p ~p ST: ~p", [Class, Reason, Stacktrace]),
         throw(encryption_failed)
     end.
 
