@@ -34,7 +34,7 @@ stop() ->
 -spec init([]) -> {ok, {supervisor:sup_flags(), [supervisor:child_spec()]}}.
 init([]) ->
     {ok, IP} = inet:parse_address(application:get_env(kds, ip, "::")),
-    HealthCheck = genlib_app:env(?MODULE, health_checkers, []),
+    HealthCheck = genlib_app:env(?MODULE, health_check, #{}),
     HealthRoute = erl_health_handle:get_route(enable_health_logging(HealthCheck)),
     KeyringManagementService = woody_server:child_spec(
         kds_thrift_management_service_sup,
