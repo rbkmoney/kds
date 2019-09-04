@@ -4,8 +4,8 @@ FROM $BASE_IMAGE
 MAINTAINER Rustem Shaydullin <ndiezel0@gmail.com>
 COPY _build/prod/rel/kds /opt/kds
 CMD /opt/kds/bin/kds foreground
-EXPOSE 8022
 # A bit of magic below to get a proper branch name
+EXPOSE 8022 8023
 # even when the HEAD is detached (Hey Jenkins!
 # BRANCH_NAME is available in Jenkins env).
 LABEL com.rbkmoney.$SERVICE_NAME.parent=$BASE_IMAGE_NAME \
