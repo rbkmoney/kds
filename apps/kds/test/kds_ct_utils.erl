@@ -102,20 +102,31 @@ start_clear(Config) ->
                         public_keys => #{
                             enc =>
                                 <<"{\n"
-                                    "                                        \"use\": \"enc\",\n"
-                                    "                                        \"kty\": \"RSA\",\n"
-                                    "                                        \"kid\": \"KUb1fNMc5j9Ei_IV3DguhJh5UOH30uvO7qXq13uevnk\",\n"
-                                    "                                        \"alg\": \"RSA-OAEP-256\",\n"
-                                    "                                        \"n\": \"2bxkamUQjD4CN8rcq5BfNLJmRmosb-zY7ajPBJqtiLUTcqym23OkUIA1brBg34clmU2ZQmtd3LWi5kVJk_wr4WsMG_78jHK3wQA-HRhY4WZDZrULTsi4XWpNSwL4dCml4fs536RKy_TyrnpiXg0ug4JVVaEeo7VIZ593mVhCxC8Ev6FK8tZ2HGGOerUXLpgQdhcp9UwaI_l7jgoWNp1f7SuBqv1mfiw4ziC1yvwyXHTKy-37LjLmVB9EVyjqpkwZgzapaOvHc1ABqJpdOrUh-PyOgq-SduqSkMrvqZEdUeR_KbFVxqbxqWJMrqkl2HOJxOla9cHRowg5ObUBjeMoaTJfqie3t6uRUsFEFMzhIyvo6QMYHooxIdOdwpZ4tpzML6jv9o5DPtN375bKzy-UsjeshYbvad1mbrcxc8tYeiQkDZEIM0KeOdHm5C6neEyY6oF4s1vSYBNCnhE5O-R9dmp8Sk5KEseEkOH5u4G2RsIXBA9z1OTDoy6qF21EvRCGzsGfExfkmPAtzbnS-EHHxbMUiio0ZJoZshYo8dwJY6vSN7UsXBgW1v7GvIF9VsfzRmgkl_3rdemYy28DJKC0U2yufePcA3nUJEhtR3UO_tIlHxZvlDSX5eTx4vs5VkFfujNSiPsgH0PEeXABGBFbal7QxU1u0XHXIFwhW5cM8Fs\",\n"
-                                    "                                        \"e\": \"AQAB\"\n"
-                                    "                                    }">>,
+                                    "\"use\": \"enc\",\n"
+                                    "\"kty\": \"RSA\",\n"
+                                    "\"kid\": \"KUb1fNMc5j9Ei_IV3DguhJh5UOH30uvO7qXq13uevnk\",\n"
+                                    "\"alg\": \"RSA-OAEP-256\",\n"
+                                    "\"n\": \"2bxkamUQjD4CN8rcq5BfNLJmRmosb-zY7ajPBJqtiLUTcqym23O"
+                                    "kUIA1brBg34clmU2ZQmtd3LWi5kVJk_wr4WsMG_78jHK3wQA-HRhY4WZDZrU"
+                                    "LTsi4XWpNSwL4dCml4fs536RKy_TyrnpiXg0ug4JVVaEeo7VIZ593mVhCxC8"
+                                    "Ev6FK8tZ2HGGOerUXLpgQdhcp9UwaI_l7jgoWNp1f7SuBqv1mfiw4ziC1yvw"
+                                    "yXHTKy-37LjLmVB9EVyjqpkwZgzapaOvHc1ABqJpdOrUh-PyOgq-SduqSkMr"
+                                    "vqZEdUeR_KbFVxqbxqWJMrqkl2HOJxOla9cHRowg5ObUBjeMoaTJfqie3t6u"
+                                    "RUsFEFMzhIyvo6QMYHooxIdOdwpZ4tpzML6jv9o5DPtN375bKzy-UsjeshYb"
+                                    "vad1mbrcxc8tYeiQkDZEIM0KeOdHm5C6neEyY6oF4s1vSYBNCnhE5O-R9dmp"
+                                    "8Sk5KEseEkOH5u4G2RsIXBA9z1OTDoy6qF21EvRCGzsGfExfkmPAtzbnS-EH"
+                                    "HxbMUiio0ZJoZshYo8dwJY6vSN7UsXBgW1v7GvIF9VsfzRmgkl_3rdemYy28"
+                                    "DJKC0U2yufePcA3nUJEhtR3UO_tIlHxZvlDSX5eTx4vs5VkFfujNSiPsgH0P"
+                                    "EeXABGBFbal7QxU1u0XHXIFwhW5cM8Fs\",\n"
+                                    "\"e\": \"AQAB\"\n"
+                                    "}">>,
                             sig =>
                                 <<"{\n"
-                                    "                                        \"crv\":\"Ed25519\",\n"
-                                    "                                        \"kid\":\"K3ZpHNJw3IZYu4fefhImUtB47eSBD4nRmpjWIoGukyg\",\n"
-                                    "                                        \"kty\":\"OKP\",\n"
-                                    "                                        \"x\":\"hqoiLZvfBzgtFQop3mBzUACee1ycgaT3tJIcKQ2Ndjc\"\n"
-                                    "                                    }">>
+                                    "\"crv\":\"Ed25519\",\n"
+                                    "\"kid\":\"K3ZpHNJw3IZYu4fefhImUtB47eSBD4nRmpjWIoGukyg\",\n"
+                                    "\"kty\":\"OKP\",\n"
+                                    "\"x\":\"hqoiLZvfBzgtFQop3mBzUACee1ycgaT3tJIcKQ2Ndjc\"\n"
+                                    "}">>
                         }
                     },
                     <<"2">> => #{
@@ -123,20 +134,31 @@ start_clear(Config) ->
                         public_keys => #{
                             enc =>
                                 <<"{\n"
-                                    "                                      \"use\": \"enc\",\n"
-                                    "                                      \"kty\": \"RSA\",\n"
-                                    "                                      \"kid\": \"JHKqPDhPO8ZnZsloKTHt44UbzYFnKnf_zowfL_zNFRE\",\n"
-                                    "                                      \"alg\": \"RSA-OAEP-256\",\n"
-                                    "                                      \"n\": \"5vIJr6yv-ipphJf8Saam2-bmB5lab7tzlGOoI6uU60x_yBfc58ttzoT__nz8UM0ZmW6k22YvMvnOvmNoPNM0rD_u7M8HGEjZyOlel64PVuv7eqU0-217JbjJ99iMbGagQkgGyyVRfS1sF9fqig79Pn7_4-bcY8-f1bZahgaDqimikfSWu00kvHwnQPNICC_xY7gtT1K40IlQcPG-XBGMrK3JXgEmTKYaNB6TS9MX20vEkcnhYzl6AeU_dj83IXuR_fw_qLqmY6rZjHWVrSvarsUIlVN3ti1Zs53eUwjv4r-wN4oK9NPNcTvAijeq85OH5DbN9ZyPTTJKcqq1Q-M2AaMTSIQCCs260CmL9Nn0M3b6eDglZumqMkCc5p_xPmNgtiFAu0_mLf3lk9MKwd2635Tz6tZO7Di77UrClTnneu1Du5VBt7v8-xIZWL11xXHaglpIwi7SLFOl_YRk6vKzjvt0pYe7N-y9T0MSTdDkB_it7Tt7rtltMYnTA8HZTlRC6EoFMj4e7bpM8iizxl6Hbg3lj0fb24kNbI4P7cV-Y6-81NLBu0Yi0H4J-b7Km_NU1tmK1SCLxzFqhCtQXg7JhJUY-gXdMgbdLyY5zrawkwsJhq_Lpsk6dHQsxV35imi7kNkOTnoiI-SpswrACIlThnT56xC5ROuFRxAlrpZef-c\",\n"
-                                    "                                      \"e\": \"AQAB\"\n"
-                                    "                                    }">>,
+                                    "\"use\": \"enc\",\n"
+                                    "\"kty\": \"RSA\",\n"
+                                    "\"kid\": \"JHKqPDhPO8ZnZsloKTHt44UbzYFnKnf_zowfL_zNFRE\",\n"
+                                    "\"alg\": \"RSA-OAEP-256\",\n"
+                                    "\"n\": \"5vIJr6yv-ipphJf8Saam2-bmB5lab7tzlGOoI6uU60x_yBfc58t"
+                                    "tzoT__nz8UM0ZmW6k22YvMvnOvmNoPNM0rD_u7M8HGEjZyOlel64PVuv7eqU"
+                                    "0-217JbjJ99iMbGagQkgGyyVRfS1sF9fqig79Pn7_4-bcY8-f1bZahgaDqim"
+                                    "ikfSWu00kvHwnQPNICC_xY7gtT1K40IlQcPG-XBGMrK3JXgEmTKYaNB6TS9M"
+                                    "X20vEkcnhYzl6AeU_dj83IXuR_fw_qLqmY6rZjHWVrSvarsUIlVN3ti1Zs53"
+                                    "eUwjv4r-wN4oK9NPNcTvAijeq85OH5DbN9ZyPTTJKcqq1Q-M2AaMTSIQCCs2"
+                                    "60CmL9Nn0M3b6eDglZumqMkCc5p_xPmNgtiFAu0_mLf3lk9MKwd2635Tz6tZ"
+                                    "O7Di77UrClTnneu1Du5VBt7v8-xIZWL11xXHaglpIwi7SLFOl_YRk6vKzjvt"
+                                    "0pYe7N-y9T0MSTdDkB_it7Tt7rtltMYnTA8HZTlRC6EoFMj4e7bpM8iizxl6"
+                                    "Hbg3lj0fb24kNbI4P7cV-Y6-81NLBu0Yi0H4J-b7Km_NU1tmK1SCLxzFqhCt"
+                                    "QXg7JhJUY-gXdMgbdLyY5zrawkwsJhq_Lpsk6dHQsxV35imi7kNkOTnoiI-S"
+                                    "pswrACIlThnT56xC5ROuFRxAlrpZef-c\",\n"
+                                    "\"e\": \"AQAB\"\n"
+                                    "}">>,
                             sig =>
                                 <<"{\n"
-                                    "                                        \"crv\":\"Ed25519\",\n"
-                                    "                                        \"kid\":\"Q_85NCYwrmJr1vcbPOzO8g31_ohqFLpVoaGysWPwCbc\",\n"
-                                    "                                        \"kty\":\"OKP\",\n"
-                                    "                                        \"x\":\"JhVaGPlRm67u0oGbgxAgqnfLfXeW0aGjhCrBf_C1Fiw\"\n"
-                                    "                                    }">>
+                                    "\"crv\":\"Ed25519\",\n"
+                                    "\"kid\":\"Q_85NCYwrmJr1vcbPOzO8g31_ohqFLpVoaGysWPwCbc\",\n"
+                                    "\"kty\":\"OKP\",\n"
+                                    "\"x\":\"JhVaGPlRm67u0oGbgxAgqnfLfXeW0aGjhCrBf_C1Fiw\"\n"
+                                    "}">>
                         }
                     },
                     <<"3">> => #{
@@ -144,20 +166,31 @@ start_clear(Config) ->
                         public_keys => #{
                             enc =>
                                 <<"{\n"
-                                    "                                      \"use\": \"enc\",\n"
-                                    "                                      \"kty\": \"RSA\",\n"
-                                    "                                      \"kid\": \"xBET5c4u0yT6pDb_Cok0exHe_wQVetVpkGKn_1mmn7A\",\n"
-                                    "                                      \"alg\": \"RSA-OAEP-256\",\n"
-                                    "                                      \"n\": \"qR8UeoACkdiKllzYR6KSqldMqeA_RkVePp1DKWXCRKDKrw3OieX81tmQmbBkcisnpSipTvezmr2-6t0sPELZeah3r1-qUwQeD2ugSicoqgQoqgLT7g9DHVF8NBvHbAgESJoq-1dJqepG8-jrwT5UGioE9SGowRVywrndUjdWrKyfDPiwzSALtV5mcpZi97M_ga5J1gNJFT0h1E2QbYkdEBeDsyatcJu_-LtEuCJN0DKUhvNeXVdIcnbwxFXtmx4dmxPUDG7a03bo2_Ni3-ZdvHmtkleHvWBn2LI_zArCIZdAMsA9HJiT8DrEuLXJ-pHhx2z6wJ9l8y7QSDTtKZE0GyNpCUHtzDfwfRS0GPdj2ntIHyBO8RZqDhWc3_FH9IxQYED5UnwP5Z-VodJ0ZIStNPNGtSs1hdnW3nyAFaP9T3X5UWhHsSGjq9pDm-Lroe4jJK4uKRa__ewIB8Szfp-NgG2SGeWhpETZSDwDYEYzMZncsp35GByj7YqmrpKqAHkTsTfkbCWHgN9wUqX1vjsPUtgHB4l_Ze1G_m__-URyu8qrDR11vzqMA-iY8aSQ7DpHoRp7fThVD7gJIQNyVyAzIvDyOVdSmUPPeGxnI1YWKX-5t5SnlnpWO1Rqqh6RBtxu_1JGfq77d2khskTaPXxc1E5iyCYLFI0UgreCXpBzSGU\",\n"
-                                    "                                      \"e\": \"AQAB\"\n"
-                                    "                                    }">>,
+                                    "\"use\": \"enc\",\n"
+                                    "\"kty\": \"RSA\",\n"
+                                    "\"kid\": \"xBET5c4u0yT6pDb_Cok0exHe_wQVetVpkGKn_1mmn7A\",\n"
+                                    "\"alg\": \"RSA-OAEP-256\",\n"
+                                    "\"n\": \"qR8UeoACkdiKllzYR6KSqldMqeA_RkVePp1DKWXCRKDKrw3OieX"
+                                    "81tmQmbBkcisnpSipTvezmr2-6t0sPELZeah3r1-qUwQeD2ugSicoqgQoqgL"
+                                    "T7g9DHVF8NBvHbAgESJoq-1dJqepG8-jrwT5UGioE9SGowRVywrndUjdWrKy"
+                                    "fDPiwzSALtV5mcpZi97M_ga5J1gNJFT0h1E2QbYkdEBeDsyatcJu_-LtEuCJ"
+                                    "N0DKUhvNeXVdIcnbwxFXtmx4dmxPUDG7a03bo2_Ni3-ZdvHmtkleHvWBn2LI"
+                                    "_zArCIZdAMsA9HJiT8DrEuLXJ-pHhx2z6wJ9l8y7QSDTtKZE0GyNpCUHtzDf"
+                                    "wfRS0GPdj2ntIHyBO8RZqDhWc3_FH9IxQYED5UnwP5Z-VodJ0ZIStNPNGtSs"
+                                    "1hdnW3nyAFaP9T3X5UWhHsSGjq9pDm-Lroe4jJK4uKRa__ewIB8Szfp-NgG2"
+                                    "SGeWhpETZSDwDYEYzMZncsp35GByj7YqmrpKqAHkTsTfkbCWHgN9wUqX1vjs"
+                                    "PUtgHB4l_Ze1G_m__-URyu8qrDR11vzqMA-iY8aSQ7DpHoRp7fThVD7gJIQN"
+                                    "yVyAzIvDyOVdSmUPPeGxnI1YWKX-5t5SnlnpWO1Rqqh6RBtxu_1JGfq77d2k"
+                                    "hskTaPXxc1E5iyCYLFI0UgreCXpBzSGU\",\n"
+                                    "\"e\": \"AQAB\"\n"
+                                    "}">>,
                             sig =>
                                 <<"{\n"
-                                    "                                        \"crv\":\"Ed25519\",\n"
-                                    "                                        \"kid\":\"nwy3plcwQj_b70JJ3maZkN-VFQpjGCVRyIFYNeC0vvs\",\n"
-                                    "                                        \"kty\":\"OKP\",\n"
-                                    "                                        \"x\":\"af4UVYqUB4g711yGxzKjWvd27c9WY1EQ1a1-fwk0A6w\"\n"
-                                    "                                    }">>
+                                    "\"crv\":\"Ed25519\",\n"
+                                    "\"kid\":\"nwy3plcwQj_b70JJ3maZkN-VFQpjGCVRyIFYNeC0vvs\",\n"
+                                    "\"kty\":\"OKP\",\n"
+                                    "\"x\":\"af4UVYqUB4g711yGxzKjWvd27c9WY1EQ1a1-fwk0A6w\"\n"
+                                    "}">>
                         }
                     }
                 }}
