@@ -484,18 +484,18 @@ rotate_with_cancel(C) ->
 -spec init_invalid_status(config()) -> _.
 init_invalid_status(C) ->
     _ = ?assertMatch(
-        {error, {invalid_status, _SomeStatus}},
+        {error, {invalid_status, _}},
         kds_keyring_client:start_init(2, root_url(C))
     ).
 
 -spec init_invalid_args(config()) -> _.
 init_invalid_args(C) ->
     _ = ?assertMatch(
-        {error, {invalid_arguments, _Reason}},
+        {error, {invalid_arguments, _}},
         kds_keyring_client:start_init(4, root_url(C))
     ),
     _ = ?assertMatch(
-        {error, {invalid_arguments, _Reason}},
+        {error, {invalid_arguments, _}},
         kds_keyring_client:start_init(0, root_url(C))
     ).
 
@@ -710,32 +710,32 @@ rekey_operation_aborted_non_matching_masterkey(C) ->
 -spec rekey_invalid_args(config()) -> _.
 rekey_invalid_args(C) ->
     _ = ?assertMatch(
-        {error, {invalid_arguments, _Reason}},
+        {error, {invalid_arguments, _}},
         kds_keyring_client:start_rekey(4, root_url(C))
     ),
     _ = ?assertMatch(
-        {error, {invalid_arguments, _Reason}},
+        {error, {invalid_arguments, _}},
         kds_keyring_client:start_rekey(0, root_url(C))
     ).
 
 -spec rekey_invalid_status(config()) -> _.
 rekey_invalid_status(C) ->
     _ = ?assertMatch(
-        {error, {invalid_status, _SomeStatus}},
+        {error, {invalid_status, _}},
         kds_keyring_client:start_rekey(2, root_url(C))
     ).
 
 -spec lock_invalid_status(config()) -> _.
 lock_invalid_status(C) ->
     _ = ?assertMatch(
-        {error, {invalid_status, _SomeStatus}},
+        {error, {invalid_status, _}},
         kds_keyring_client:lock(root_url(C))
     ).
 
 -spec rotate_invalid_status(config()) -> _.
 rotate_invalid_status(C) ->
     _ = ?assertMatch(
-        {error, {invalid_status, _SomeStatus}},
+        {error, {invalid_status, _}},
         kds_keyring_client:start_rotate(root_url(C))
     ).
 
