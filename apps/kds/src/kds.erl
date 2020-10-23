@@ -34,6 +34,7 @@ init([]) ->
     {ok, IP} = inet:parse_address(application:get_env(kds, ip, "::")),
     HealthCheck = genlib_app:env(?MODULE, health_check, #{}),
     HealthRoute = erl_health_handle:get_route(enable_health_logging(HealthCheck)),
+    PrometeusRoute = get_prometheus_route(),
     KeyringManagementService = woody_server:child_spec(
         kds_thrift_management_service_sup,
         #{
@@ -46,10 +47,9 @@ init([]) ->
             transport_opts => genlib_app:env(?MODULE, management_transport_opts, #{}),
             protocol_opts => genlib_app:env(?MODULE, protocol_opts, #{}),
             shutdown_timeout => genlib_app:env(?MODULE, shutdown_timeout, 0),
-            additional_routes => [HealthRoute]
+            additional_routes => [HealthRoute, PrometeusRoute]
         }
     ),
-    PrometeusRoute = get_prometheus_route(),
     KeyringStorageService = woody_server:child_spec(
         kds_thrift_storage_service_sup,
         #{
@@ -62,7 +62,7 @@ init([]) ->
             transport_opts => genlib_app:env(?MODULE, storage_transport_opts, #{}),
             protocol_opts => genlib_app:env(?MODULE, protocol_opts, #{}),
             shutdown_timeout => genlib_app:env(?MODULE, shutdown_timeout, 0),
-            additional_routes => [HealthRoute, PrometeusRoute]
+            additional_routes => [HealthRoute]
         }
     ),
     KeyringSupervisor = #{
