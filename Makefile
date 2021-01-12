@@ -14,11 +14,11 @@ SERVICE_IMAGE_PUSH_TAG ?= $(SERVICE_IMAGE_TAG)
 
 # Base image for the service
 BASE_IMAGE_NAME := service-erlang
-BASE_IMAGE_TAG := 97b2410ac4495aa8c55eb5cffcc70dbbc3147c5f
+BASE_IMAGE_TAG := b2c2a3f8c46842488eef78a2574ba880eeff07b9
 
 # Build image tag to be used
 BUILD_IMAGE_NAME := build-erlang
-BUILD_IMAGE_TAG := 843ebc82fd64b476ad82ae6cc6ca6398f4e6f9b4
+BUILD_IMAGE_TAG := 77025543100d92756b4d47f68538e8e70cafc7ef
 
 CALL_W_CONTAINER := all submodules compile xref lint dialyze test \
 					release clean distclean check_format format
