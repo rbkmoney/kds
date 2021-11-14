@@ -109,7 +109,7 @@ $ woorl -s cds_proto/proto/keyring.thrift \
 $ echo "<insert EncryptedMasterKeyShare here>" | \
   step crypto jwe decrypt --key rsa-enc.json | \
   step crypto jws sign - --key ec.json | \
-  woorl -s cds_proto/proto/kds.thrift \
+  woorl -s cds_proto/proto/keyring.thrift \
    'http://kds:8022/v2/keyring' \
    KeyringManagement ValidateInit '{"id":"<insert id, ex. ndiezel>","signed_share":"'"$(cat -)"'"}'
 ```
@@ -198,7 +198,7 @@ $ woorl -s cds_proto/proto/keyring.thrift \
 $ echo "<insert EncryptedMasterKeyShare here>" | \
   step crypto jwe decrypt --key rsa-enc.json | \
   step crypto jws sign - --key ec.json | \
-  woorl -s cds_proto/proto/kds.thrift \
+  woorl -s cds_proto/proto/keyring.thrift \
    'http://kds:8022/v2/keyring' \
    KeyringManagement ConfirmRotate '{"id":"<insert id, ex. ndiezel>","signed_share":"'"$(cat -)"'"}'
 ```
@@ -239,7 +239,7 @@ $ echo "<insert EncryptedMasterKeyShare here>" | \
 Начинаем процесс замены ключа:
 
 ```bash
-$ woorl -s cds_proto/proto/kds.thrift \
+$ woorl -s cds_proto/proto/keyring.thrift \
    'http://kds:8022/v2/keyring' \
    KeyringManagement StartRekey '<insert threshold here>'
 ```
